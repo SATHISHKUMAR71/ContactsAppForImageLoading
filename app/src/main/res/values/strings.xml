@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">BitmapLoadingAndCaching</string>
     <string name="image">Image</string>
+    <string name="search_contacts">Search Contacts</string>
 </resources>

@@ -1,5 +1,5 @@
 package com.example.bitmaploadingandcaching
 
-import android.graphics.drawable.Drawable
 
-data class Contact (val name:String,val image:String,val contactColor:Int,val contactNumber:String)
+
+data class Contact (val name:String,val image:String,val contactColor:Int,val contactNumber:String,val isHighlighted:Boolean)
