@@ -13,8 +13,10 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.collection.LruCache
 import androidx.core.content.ContextCompat
@@ -67,23 +69,12 @@ class ImagesAdapter(private var imageList:MutableList<Contact>,private var conte
         })
     }
 
-
-    companion object{
-        var COLORS_LIST = arrayOf(Color.argb(255,251,192,45),
-                                    Color.argb(255,230,74,25),
-                                    Color.argb(255,0,151,167),
-                                    Color.argb(255,25,118,210),
-                                    Color.argb(255,211,47,47),
-                                    Color.argb(255,103,80,164),
-                                    Color.argb(255,0,121,107),
-                                    Color.argb(255,56,142,60),
-                                    Color.argb(255,121,134,203),
-                                    Color.argb(255,224,64,251))
-    }
     inner class ImageHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         val imageView: ImageView = itemView.findViewById(R.id.contactImage)
         val contactName:TextView = itemView.findViewById(R.id.contactName)
         val profileName:TextView = itemView.findViewById(R.id.textName)
+        val callButton:ImageButton = itemView.findViewById(R.id.callButton)
+        val mobileNumber:TextView = itemView.findViewById(R.id.mobileNumber)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageHolder {
@@ -97,8 +88,13 @@ class ImagesAdapter(private var imageList:MutableList<Contact>,private var conte
     override fun onBindViewHolder(holder: ImageHolder, position: Int) {
         holder.contactName.text = imageList[holder.adapterPosition].name
         holder.profileName.text = imageList[holder.adapterPosition].name[0].toString()
-        holder.profileName.background.setTint(COLORS_LIST[Random.nextInt(0,10)])
+        holder.callButton.setOnClickListener{
+            Toast.makeText(context,"Can't Make a Call",Toast.LENGTH_LONG).show()
+        }
+        holder.profileName.background.setTint(imageList[holder.adapterPosition].contactColor)
+        holder.mobileNumber.text = imageList[holder.adapterPosition].contactNumber
         loadImage(holder,position,imageList[position].image)
+
     }
 
 
@@ -192,6 +188,7 @@ class ImagesAdapter(private var imageList:MutableList<Contact>,private var conte
             holder.imageView.visibility = View.VISIBLE
         }
     }
+
 
     fun downloadPendingRequests() {
 
