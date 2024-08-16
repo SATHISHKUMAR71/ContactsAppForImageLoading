@@ -89,7 +89,7 @@ class ImagesAdapter(private var imageList:MutableList<Contact>,private var conte
         holder.contactName.text = imageList[holder.adapterPosition].name
         holder.profileName.text = imageList[holder.adapterPosition].name[0].toString()
         holder.callButton.setOnClickListener{
-            Toast.makeText(context,"Can't Make a Call",Toast.LENGTH_LONG).show()
+            Toast.makeText(context,"Can't Make a Call Please insert a SIM",Toast.LENGTH_SHORT).show()
         }
         holder.profileName.background.setTint(imageList[holder.adapterPosition].contactColor)
         holder.mobileNumber.text = imageList[holder.adapterPosition].contactNumber

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/mic"
+        android:title="Mic"
+        android:icon="@drawable/mic_24px"
+        app:showAsAction="always"/>
+    <group>
+        <item android:id="@+id/settings"
+            android:icon="@drawable/settings_24px"
+            android:title="Settings"/>
+        <item android:id="@+id/callHistory"
+            android:icon="@drawable/history_24px"
+            android:title="Call History"/>
+    </group>
+</menu>

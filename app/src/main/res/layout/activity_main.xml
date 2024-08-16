@@ -7,21 +7,33 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/materialToolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimaryDark"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:title="Contacts List"
-        app:titleCentered="true"
-        app:titleTextColor="?attr/colorOnPrimary" />
+        android:layout_margin="10dp"
+        android:layout_height="50dp"
+        android:background="@drawable/search_bar_background"
+        android:backgroundTint="?attr/colorControlHighlight"
+        app:menu="@menu/searchbar_menu"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <SearchView
+            android:id="@+id/searchbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="?attr/colorControlHighlight"
+            android:iconifiedByDefault="false"
+            android:queryBackground="@android:color/transparent"
+            android:queryHint="Search Contacts"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </com.google.android.material.appbar.MaterialToolbar>
 
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -31,15 +43,3 @@
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
-<!--<SearchView-->
-<!--android:id="@+id/searchView"-->
-<!--android:layout_width="match_parent"-->
-<!--android:layout_height="wrap_content"-->
-<!--android:backgroundTint="#D9D5D5"-->
-<!--android:iconifiedByDefault="false"-->
-<!--android:background="@drawable/search_bar_background"-->
-<!--android:queryBackground="@android:color/transparent"-->
-<!--android:queryHint="Search Notes"-->
-<!--app:layout_constraintEnd_toEndOf="parent"-->
-<!--app:layout_constraintStart_toStartOf="parent"-->
-<!--app:layout_constraintTop_toTopOf="parent" />-->
