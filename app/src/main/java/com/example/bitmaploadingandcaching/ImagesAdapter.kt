@@ -100,11 +100,11 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         holder.profileName.text = contactList[holder.absoluteAdapterPosition].name[0].toString()
         searchQuery = MainActivity.queryReceived
 
-        holder.itemView.setOnClickListener{
-            val list = contactList.toMutableList()
-            list.removeAt(holder.absoluteAdapterPosition)
-            resetViews(list)
-        }
+//        holder.itemView.setOnClickListener{
+//            val list = contactList.toMutableList()
+//            list.removeAt(holder.absoluteAdapterPosition)
+//            resetViews(list)
+//        }
         holder.callButton.setOnClickListener{
             Toast.makeText(context,"Can't Make a Call Please insert a SIM",Toast.LENGTH_SHORT).show()
         }
@@ -115,59 +115,29 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
 
-    fun resetViews(newList:List<Contact>){
+    fun resetViews(newList:List<Contact>,query:String?){
+        println("On Reset View")
         val contactDiff = ContactsDiffUtil(contactList, newList)
         val diffResult = DiffUtil.calculateDiff(contactDiff)
         contactList.clear()
         contactList.addAll(newList)
-        println("Contact List: $contactList")
         diffResult.dispatchUpdatesTo(this)
-    }
-
-
-    private fun updateSearchedView(holder: ImageHolder) {
-        val position = holder.absoluteAdapterPosition
-        val length = searchQuery.length
-        if(contactList[position].isHighlighted && searchQuery.isNotEmpty()){
-//            For Name
-            println("On Search $searchQuery ${contactList[position]}")
-            var startIndex = contactList[position].name.indexOf(searchQuery, ignoreCase = true)
-            val highlightedName = SpannableString(contactList[position].name)
-            while (startIndex>=0){
-                val endIndex = startIndex+length
-                highlightedName.setSpan(
-                    ForegroundColorSpan(Color.argb(255,255,20,20)), // You can choose any color
-                    startIndex,
-                    endIndex,
-                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
-                )
-                startIndex = contactList[position].name.indexOf(searchQuery,endIndex, ignoreCase = true)
+        if(query!=null){
+            if(query.isNotEmpty()){
+                println("Search is Happened")
             }
-
-//            For Mobile Number
-            var startIndexMobile = contactList[position].contactNumber.indexOf(searchQuery, ignoreCase = true)
-            val highlightedMobile = SpannableString(contactList[position].contactNumber)
-            while (startIndexMobile>=0){
-                val endIndex = startIndex+length
-                highlightedMobile.setSpan(
-                    ForegroundColorSpan(Color.argb(255,255,20,20)), // You can choose any color
-                    startIndexMobile,
-                    endIndex,
-                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
-                )
-                startIndexMobile = contactList[position].name.indexOf(searchQuery,endIndex, ignoreCase = true)
-            }
-            holder.contactName.text = highlightedName
-            holder.mobileNumber.text = highlightedMobile
+            return
         }
     }
+
+
 
     private fun loadImage(holder: ImageHolder,position: Int,imageUrl: String){
         if((bitmapCache.get(imageUrl)==null) && (ongoingDownloads[imageUrl]!=true)){
             holder.imageView.visibility = View.INVISIBLE
 //            Thread{
             threadPoolExecutor.execute {
-                println("Thread Name: ${Thread.currentThread().id}  Task: ${holder.contactName.text}")
+//                println("Thread Name: ${Thread.currentThread().id}  Task: ${holder.contactName.text}")
                 try {
                     if (!networkLost) {
                         println("Download Started: ${contactList[position].name} ${Thread.currentThread().id}")

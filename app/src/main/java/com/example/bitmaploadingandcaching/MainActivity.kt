@@ -33,25 +33,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        println("On Created")
         loadImageList()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val rv = findViewById<RecyclerView>(R.id.recyclerView)
+        val recyclerSearchView = findViewById<RecyclerView>(R.id.searchRecyclerView)
         val adapter = ImagesAdapter(baseContext)
-        adapter.resetViews(contactList)
+        adapter.resetViews(contactList,null)
         rv.layoutManager = LinearLayoutManager(this)
         rv.adapter = adapter
-
-        val searchView = findViewById<com.google.android.material.search.SearchView>(R.id.searchView)
-        val recyclerSearchView = findViewById<RecyclerView>(R.id.searchRecyclerView)
         recyclerSearchView.adapter = adapter
         recyclerSearchView.layoutManager = LinearLayoutManager(this)
+
+        val searchView = findViewById<com.google.android.material.search.SearchView>(R.id.searchView)
+
+
         searchView.editText.addTextChangedListener{
             queryReceived = "${it?:""}"
             val list1 = getImageList((it?:"").toString(), contactList)
-            adapter.resetViews(list1)
+            adapter.resetViews(list1, queryReceived)
         }
+
         searchView.addTransitionListener { searchView, previousState, newState ->
             if(newState == com.google.android.material.search.SearchView.TransitionState.HIDDEN){
                 queryReceived = ""
