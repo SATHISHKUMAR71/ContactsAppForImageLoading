@@ -19,4 +19,8 @@ class ContactsDiffUtil(private val oldList: List<Contact>,private val newList: L
         return oldList[oldItemPosition]==newList[newItemPosition]
     }
 
+    override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+        val oldItem = oldList[oldItemPosition].name
+        return super.getChangePayload(oldItemPosition, newItemPosition)
+    }
 }

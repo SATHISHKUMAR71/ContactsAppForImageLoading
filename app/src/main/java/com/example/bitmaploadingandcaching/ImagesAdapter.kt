@@ -24,6 +24,8 @@ import androidx.annotation.RequiresApi
 import androidx.collection.LruCache
 import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
@@ -51,7 +53,10 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
     private var pauseDownload = ConcurrentHashMap<String,HolderWithPosition>()
     private val handler = Handler(Looper.getMainLooper())
     private var networkLost = true
-    private var threadPoolExecutor = ThreadPoolExecutor(10,20,2,TimeUnit.SECONDS,LinkedBlockingQueue())
+    private var updateUI = MutableLiveData(false)
+    private var size = 0
+    private var pos = 0
+//    private var threadPoolExecutor = ThreadPoolExecutor(20,40,2,TimeUnit.SECONDS,LinkedBlockingQueue())
     private val connectivityManager = context.getSystemService(ConnectivityManager::class.java).apply {
         registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback(){
             override fun onAvailable(network: Network) {
@@ -99,12 +104,8 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         holder.contactName.text = contactList[holder.absoluteAdapterPosition].name
         holder.profileName.text = contactList[holder.absoluteAdapterPosition].name[0].toString()
         searchQuery = MainActivity.queryReceived
-
-//        holder.itemView.setOnClickListener{
-//            val list = contactList.toMutableList()
-//            list.removeAt(holder.absoluteAdapterPosition)
-//            resetViews(list)
-//        }
+//        println("ON Bind View Holder Called")
+        updateSearchedView(holder)
         holder.callButton.setOnClickListener{
             Toast.makeText(context,"Can't Make a Call Please insert a SIM",Toast.LENGTH_SHORT).show()
         }
@@ -124,33 +125,98 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         diffResult.dispatchUpdatesTo(this)
         if(query!=null){
             if(query.isNotEmpty()){
+//                updateUI.value = true
                 println("Search is Happened")
+                notifyItemRangeChanged(0,newList.size)
             }
-            return
+            else{
+                println("Search is Happened IN Else")
+                notifyItemRangeChanged(0,newList.size)
+            }
+        }
+    }
+
+
+    private fun updateSearchedView(holder: ImageHolder) {
+        println("ON UPDATE SEARCH")
+        val position = holder.absoluteAdapterPosition
+        val length = searchQuery.length
+        if(contactList[position].isHighlighted && searchQuery.isNotEmpty()){
+//            For Name
+            var startIndex = contactList[position].name.indexOf(searchQuery, ignoreCase = true)
+            val highlightedName = SpannableString(contactList[position].name)
+            while (startIndex>=0){
+                val endIndex = startIndex+length
+                highlightedName.setSpan(
+                    ForegroundColorSpan(Color.argb(255,255,20,20)), // You can choose any color
+                    startIndex,
+                    endIndex,
+                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                )
+                startIndex = contactList[position].name.indexOf(searchQuery,endIndex, ignoreCase = true)
+            }
+
+//            For Mobile Number
+            var startIndexMobile = contactList[position].contactNumber.indexOf(searchQuery, ignoreCase = true)
+            val highlightedMobile = SpannableString(contactList[position].contactNumber)
+            while (startIndexMobile>=0){
+                val endIndex = startIndex+length
+                highlightedMobile.setSpan(
+                    ForegroundColorSpan(Color.argb(255,255,20,20)), // You can choose any color
+                    startIndexMobile,
+                    endIndex,
+                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                )
+                startIndexMobile = contactList[position].name.indexOf(searchQuery,endIndex, ignoreCase = true)
+            }
+            holder.contactName.text = highlightedName
+            holder.mobileNumber.text = highlightedMobile
         }
     }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private fun loadImage(holder: ImageHolder,position: Int,imageUrl: String){
-        if((bitmapCache.get(imageUrl)==null) && (ongoingDownloads[imageUrl]!=true)){
+        println("IN ELSE Load Image Called $position")
+        if((bitmapCache.get(imageUrl)==null) && (ongoingDownloads[imageUrl]!=true)) {
             holder.imageView.visibility = View.INVISIBLE
-//            Thread{
-            threadPoolExecutor.execute {
+            Thread {
+                var name = contactList[holder.absoluteAdapterPosition].name
 //                println("Thread Name: ${Thread.currentThread().id}  Task: ${holder.contactName.text}")
                 try {
                     if (!networkLost) {
-                        println("Download Started: ${contactList[position].name} ${Thread.currentThread().id}")
+                        println("Download : $name ${Thread.currentThread().id} Started")
                         ongoingDownloads[imageUrl] = true
                         val url = URL(imageUrl).openConnection()
                         url.connect()
                         val inputStream = url.getInputStream()
                         val downloadedImage = BitmapFactory.decodeStream(inputStream)
                         inputStream.close()
-                        println("Download Finished: ${contactList[position].name} ${Thread.currentThread().id}")
+                        println("Download : $name ${Thread.currentThread().id} Finished")
                         bitmapCache.put(imageUrl, downloadedImage)
                         handler.post {
                             var i = 0
+                            println("updateding at Position: ${holder.absoluteAdapterPosition} actual pos: $position")
                             if (holder.absoluteAdapterPosition == position) {
                                 i += 1
                                 holder.imageView.setImageBitmap(downloadedImage)
@@ -178,7 +244,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                     }
 
                 } catch (e: UnknownHostException) {
-                    println("In UnKnown Host Exception")
+                    println("In UnKnown Host Exception $name ${Thread.currentThread().id}")
 //                    Adding the Pause Download if any Network Interrupt Happens
                     pauseDownload[imageUrl] = HolderWithPosition(holder, position)
                     if (pendingRequests[imageUrl].isNullOrEmpty()) {
@@ -189,14 +255,13 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                         pendingRequests[imageUrl]?.add(HolderWithPosition(holder, position))
                     }
                 } catch (e: MalformedURLException) {
-                    println("Download Error while Downloading : ${contactList[position].name}")
+                    println("Download Error while Downloading : $name ${Thread.currentThread().id}")
                     ongoingDownloads[imageUrl] = true
                 } catch (e: Exception) {
-                    println("IN Catch $e")
+                    println("IN Catch $e $name ${Thread.currentThread().id}")
                     ongoingDownloads[imageUrl] = false
                 }
-            }
-//            }.start()
+            }.start()
         }
 
         else if((bitmapCache.get(imageUrl)==null) && (ongoingDownloads[imageUrl]==true)){
@@ -219,15 +284,9 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
     fun downloadPendingRequests() {
 
-//        println("Pause Download Value: $pauseDownload")
-//        println("Pause Download Size: ${pauseDownload.size}")
-//        println("Pending Request Size: ${pendingRequests.size}")
-//        pendingRequests.forEach{
-//            println("${it.key} size: ${it.value.size}")
-//        }
         pauseDownload.forEach {
-//            Thread{
-            threadPoolExecutor.execute {
+            Thread{
+//            threadPoolExecutor.execute {
                 try {
 //                println("Pause Download Started: ${contactList[it.value.position].name} ${Thread.currentThread().id}")
                     ongoingDownloads[it.key] = true
@@ -262,8 +321,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                 } catch (e: Exception) {
                     ongoingDownloads[it.key] = false
                 }
-            }
-//        }.start()
+            }.start()
         }
     }
 }

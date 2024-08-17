@@ -55,11 +55,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         searchView.addTransitionListener { searchView, previousState, newState ->
-            if(newState == com.google.android.material.search.SearchView.TransitionState.HIDDEN){
-                queryReceived = ""
-            }
-            else if(newState == com.google.android.material.search.SearchView.TransitionState.HIDING){
-                queryReceived = ""
+            if(newState == com.google.android.material.search.SearchView.TransitionState.HIDING){
+                println("On Hiding")
+                adapter.resetViews(contactList,null)
             }
         }
     }
