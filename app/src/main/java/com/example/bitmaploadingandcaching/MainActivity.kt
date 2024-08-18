@@ -1,21 +1,36 @@
 package com.example.bitmaploadingandcaching
 
 
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.widget.ActionMenuView
 import android.widget.SearchView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.search.SearchBar
+import java.util.Locale
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
+    private val SPEECH_RECOGNITION_REQ = 102
+    private val REQUEST_RECORD_AUDIO_PERMISSION = 200
+    private var permissionToRecordAccepted = false
+    private lateinit var searchView:com.google.android.material.search.SearchView
+    private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO)
     private var contactList:MutableList<Contact> = mutableListOf()
     companion object{
         var queryReceived = ""
@@ -36,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         loadImageList()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
         val rv = findViewById<RecyclerView>(R.id.recyclerView)
         val recyclerSearchView = findViewById<RecyclerView>(R.id.searchRecyclerView)
         val adapter = ImagesAdapter(baseContext)
@@ -45,8 +61,37 @@ class MainActivity : AppCompatActivity() {
         recyclerSearchView.adapter = adapter
         recyclerSearchView.layoutManager = LinearLayoutManager(this)
 
-        val searchView = findViewById<com.google.android.material.search.SearchView>(R.id.searchView)
+        searchView = findViewById<com.google.android.material.search.SearchView>(R.id.searchView)
+        val searchBar = findViewById<SearchBar>(R.id.searchBar)
 
+        var launchOnResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result ->
+            if(result.resultCode==Activity.RESULT_OK){
+                val activityResult = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                searchView.setText(activityResult?.get(0).toString())
+            }
+        }
+        searchBar.setOnMenuItemClickListener {
+            when(it.itemId){
+                R.id.mic ->{
+                    println("ITEM CLICKED")
+                    if(!SpeechRecognizer.isRecognitionAvailable(this)){
+                        Toast.makeText(baseContext,"Speech Recognition not available",Toast.LENGTH_SHORT).show()
+                    }
+                    else{
+                        val recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,Locale.getDefault())
+                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_PROMPT,"Say Contact Name")
+                        launchOnResult.launch(recognizerIntent)
+
+                    }
+                    true
+                }
+                else -> {
+                    false
+                }
+            }
+        }
 
         searchView.editText.addTextChangedListener{
             queryReceived = "${it?:""}"
@@ -62,6 +107,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode==SPEECH_RECOGNITION_REQ && resultCode == Activity.RESULT_OK){
+            val result = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            println("RESULT: ${result?.get(0).toString()}")
+            searchView.setText(result?.get(0).toString())
+        }
+    }
+
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED
+            if (!permissionToRecordAccepted) {
+                Toast.makeText(this, "Permission to record audio is required", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
+    }
 
     private fun getImageList(query:String,list: List<Contact>):List<Contact>{
         val queriedList:MutableList<Contact> = mutableListOf()
