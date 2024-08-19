@@ -28,6 +28,7 @@ import com.example.bitmaploadingandcaching.dataclass.HolderWithPosition
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.fragments.HomeFragment
 import com.example.bitmaploadingandcaching.viewmodel.CacheData
+import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.UnknownHostException
@@ -108,8 +109,12 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         else{
             println("IMAGE URI: ${contactList[holder.absoluteAdapterPosition].image}")
             if(holder.absoluteAdapterPosition == position){
-                holder.imageView.setImageURI(Uri.parse(contactList[holder.absoluteAdapterPosition].image))
-                holder.imageView.visibility = View.VISIBLE
+                val i = context.contentResolver.query(Uri.parse(contactList[holder.absoluteAdapterPosition].image),null,null,null,null)
+                if(i?.moveToNext()==true){
+                    holder.imageView.setImageURI(Uri.parse(contactList[holder.absoluteAdapterPosition].image))
+                    holder.imageView.visibility = View.VISIBLE
+                    i.close()
+                }
             }
         }
     }

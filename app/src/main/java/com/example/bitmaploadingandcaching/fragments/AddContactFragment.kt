@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.setPadding
 import com.example.bitmaploadingandcaching.R
@@ -32,7 +33,7 @@ class AddContactFragment : Fragment() {
     private lateinit var phoneNumber:TextInputEditText
     private lateinit var email:TextInputEditText
     private lateinit var saveBtn:MaterialButton
-    private lateinit var dataImage:Uri
+    private var dataImage:Uri = Uri.parse("")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -52,10 +53,17 @@ class AddContactFragment : Fragment() {
         email = view.findViewById(R.id.email)
         saveBtn = view.findViewById(R.id.addContactSaveButton)
         saveBtn.setOnClickListener {
-            CacheData.addList(Contact(firstName.text.toString(),
+            if(firstName.text.toString().isNotEmpty() || lastName.text.toString().isNotEmpty() ||
+                companyName.text.toString().isNotEmpty() || phoneNumber.text.toString().isNotEmpty() || email.text.toString().isNotEmpty()){
+                CacheData.addList(Contact(firstName.text.toString(),
                     dataImage.toString(),
                     HomeFragment.COLORS_LIST[Random.nextInt(0,10)],phoneNumber.text.toString(),false,true))
-            parentFragmentManager.popBackStack()
+                parentFragmentManager.popBackStack()
+                Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
+            }
+            else{
+                Toast.makeText(requireContext(),"Add Info To Save as a Contact",Toast.LENGTH_SHORT).show()
+            }
         }
 
         var launchImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
