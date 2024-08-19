@@ -1,4 +1,4 @@
-package com.example.bitmaploadingandcaching
+package com.example.bitmaploadingandcaching.dataclass
 
 
 

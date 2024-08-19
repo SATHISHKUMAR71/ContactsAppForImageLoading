@@ -1,13 +1,11 @@
-package com.example.bitmaploadingandcaching
+package com.example.bitmaploadingandcaching.recyclerview
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.net.Network
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.Spannable
@@ -20,27 +18,18 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.collection.LruCache
-import androidx.core.content.ContextCompat
-import androidx.core.view.setPadding
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.facebook.shimmer.ShimmerFrameLayout
-import kotlinx.coroutines.Runnable
-import kotlinx.coroutines.delay
+import com.example.bitmaploadingandcaching.dataclass.Contact
+import com.example.bitmaploadingandcaching.dataclass.HolderWithPosition
+import com.example.bitmaploadingandcaching.R
+import com.example.bitmaploadingandcaching.fragments.HomeFragment
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.UnknownHostException
-import java.sql.Time
-import java.util.concurrent.BlockingQueue
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAdapter.ImageHolder>(){
 
@@ -50,7 +39,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
     private var ongoingDownloads = ConcurrentHashMap<String,Boolean>()
     private var positionList:MutableList<Int> = mutableListOf()
     private var pendingRequests = ConcurrentHashMap<String,MutableList<HolderWithPosition>>()
-    private var pauseDownload = ConcurrentHashMap<String,HolderWithPosition>()
+    private var pauseDownload = ConcurrentHashMap<String, HolderWithPosition>()
     private val handler = Handler(Looper.getMainLooper())
     private var networkLost = true
     private var updateUI = MutableLiveData(false)
@@ -103,7 +92,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
     override fun onBindViewHolder(holder: ImageHolder, position: Int) {
         holder.contactName.text = contactList[holder.absoluteAdapterPosition].name
         holder.profileName.text = contactList[holder.absoluteAdapterPosition].name[0].toString()
-        searchQuery = MainActivity.queryReceived
+        searchQuery = HomeFragment.queryReceived
 //        println("ON Bind View Holder Called")
         updateSearchedView(holder)
         holder.callButton.setOnClickListener{
@@ -116,7 +105,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
 
-    fun resetViews(newList:List<Contact>,query:String?){
+    fun resetViews(newList:List<Contact>, query:String?){
         println("On Reset View")
         val contactDiff = ContactsDiffUtil(contactList, newList)
         val diffResult = DiffUtil.calculateDiff(contactDiff)
@@ -176,27 +165,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private fun loadImage(holder: ImageHolder,position: Int,imageUrl: String){
+    private fun loadImage(holder: ImageHolder, position: Int, imageUrl: String){
         println("IN ELSE Load Image Called $position")
         if((bitmapCache.get(imageUrl)==null) && (ongoingDownloads[imageUrl]!=true)) {
             holder.imageView.visibility = View.INVISIBLE
@@ -277,7 +246,9 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         }
         else{
             holder.imageView.setImageBitmap(bitmapCache.get(imageUrl))
-            holder.imageView.visibility = View.VISIBLE
+            if(holder.imageView.visibility != View.VISIBLE){
+                holder.imageView.visibility = View.VISIBLE
+            }
         }
     }
 

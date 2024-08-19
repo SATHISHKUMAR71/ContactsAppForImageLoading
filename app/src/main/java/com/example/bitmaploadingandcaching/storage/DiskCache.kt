@@ -1,4 +1,4 @@
-package com.example.bitmaploadingandcaching
+package com.example.bitmaploadingandcaching.storage
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -14,7 +14,7 @@ object DiskCache {
         if(!file.exists()){
             file.mkdirs()
         }
-        if(loadBitMap(context,key)==null){
+        if(loadBitMap(context,key) ==null){
             val bitmapFile = File(file,key)
             val outputStream = FileOutputStream(bitmapFile)
             println("Data Stored Successfully")

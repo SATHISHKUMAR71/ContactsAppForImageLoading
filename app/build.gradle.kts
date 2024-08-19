@@ -49,4 +49,7 @@ dependencies {
     implementation(libs.shimmer)
     implementation(libs.material.v190)
     implementation(libs.androidx.recyclerview)
+    // For control over item selection of both touch and mouse driven selection
+    implementation(libs.androidx.recyclerview.selection)
+
 }

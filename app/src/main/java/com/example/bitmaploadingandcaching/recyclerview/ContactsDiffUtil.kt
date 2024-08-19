@@ -1,8 +1,9 @@
-package com.example.bitmaploadingandcaching
+package com.example.bitmaploadingandcaching.recyclerview
 
 import androidx.recyclerview.widget.DiffUtil
+import com.example.bitmaploadingandcaching.dataclass.Contact
 
-class ContactsDiffUtil(private val oldList: List<Contact>,private val newList: List<Contact>):DiffUtil.Callback() {
+class ContactsDiffUtil(private val oldList: List<Contact>, private val newList: List<Contact>):DiffUtil.Callback() {
     override fun getOldListSize(): Int {
         return oldList.size
     }
