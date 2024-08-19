@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.Network
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.text.Spannable
@@ -26,6 +27,7 @@ import com.example.bitmaploadingandcaching.dataclass.Contact
 import com.example.bitmaploadingandcaching.dataclass.HolderWithPosition
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.fragments.HomeFragment
+import com.example.bitmaploadingandcaching.viewmodel.CacheData
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.UnknownHostException
@@ -35,7 +37,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
     private var searchQuery = ""
     private var contactList:MutableList<Contact> = mutableListOf()
-    private var bitmapCache = LruCache<String,Bitmap>((Runtime.getRuntime().maxMemory()/4).toInt())
+    private var bitmapCache = CacheData.bitmapCache
     private var ongoingDownloads = ConcurrentHashMap<String,Boolean>()
     private var positionList:MutableList<Int> = mutableListOf()
     private var pendingRequests = ConcurrentHashMap<String,MutableList<HolderWithPosition>>()
@@ -91,7 +93,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
     override fun onBindViewHolder(holder: ImageHolder, position: Int) {
         holder.contactName.text = contactList[holder.absoluteAdapterPosition].name
-        holder.profileName.text = contactList[holder.absoluteAdapterPosition].name[0].toString()
+        holder.profileName.text = contactList[holder.absoluteAdapterPosition].name[0].toString().uppercase()
         searchQuery = HomeFragment.queryReceived
 //        println("ON Bind View Holder Called")
         updateSearchedView(holder)
@@ -100,7 +102,16 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         }
         holder.profileName.background.setTint(contactList[holder.absoluteAdapterPosition].contactColor)
         holder.mobileNumber.text = contactList[holder.absoluteAdapterPosition].contactNumber
-        loadImage(holder,position,contactList[position].image)
+        if(!contactList[holder.absoluteAdapterPosition].isUri){
+            loadImage(holder,position,contactList[position].image)
+        }
+        else{
+            println("IMAGE URI: ${contactList[holder.absoluteAdapterPosition].image}")
+            if(holder.absoluteAdapterPosition == position){
+                holder.imageView.setImageURI(Uri.parse(contactList[holder.absoluteAdapterPosition].image))
+                holder.imageView.visibility = View.VISIBLE
+            }
+        }
     }
 
 
