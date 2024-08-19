@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private var permissionToRecordAccepted = false
     private lateinit var searchView:com.google.android.material.search.SearchView
     private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO)
+    private var recordAudioPermission = false
     private var contactList:MutableList<Contact> = mutableListOf()
     companion object{
         var queryReceived = ""
@@ -53,7 +54,7 @@ class MainActivity : AppCompatActivity() {
             Color.argb(255,224,64,251))
     }
 
-    @SuppressLint("NewApi")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         loadImageList()
         super.onCreate(savedInstanceState)
@@ -98,12 +99,17 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(baseContext,"Speech Recognition not available",Toast.LENGTH_SHORT).show()
                     }
                     else{
-                        val recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,Locale.getDefault())
-                        recognizerIntent.putExtra(RecognizerIntent.EXTRA_PROMPT,"Say Contact Name")
-                        launchOnResult.launch(recognizerIntent)
-
+                        println("ON Permission: $recordAudioPermission")
+                        if(recordAudioPermission){
+                            val recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+                            recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                            recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,Locale.getDefault())
+                            recognizerIntent.putExtra(RecognizerIntent.EXTRA_PROMPT,"Say Contact Name")
+                            launchOnResult.launch(recognizerIntent)
+                        }
+                        else{
+                            ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
+                        }
                     }
                     true
                 }
@@ -132,13 +138,12 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            println("ON Permission Request ${recordAudioPermission}")
             permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED
-            if (!permissionToRecordAccepted) {
-                Toast.makeText(this, "Permission to record audio is required", Toast.LENGTH_SHORT).show()
-                finish()
-            }
+            recordAudioPermission = permissionToRecordAccepted
         }
     }
+
 
     private fun getImageList(query:String,list: List<Contact>):List<Contact>{
         val queriedList:MutableList<Contact> = mutableListOf()

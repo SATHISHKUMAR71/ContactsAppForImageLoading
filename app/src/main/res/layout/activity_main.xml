@@ -34,6 +34,15 @@
             tools:layout_editor_absoluteX="16dp" />
     </com.google.android.material.appbar.AppBarLayout>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:contentDescription="@string/add_contact"
+        android:src="@drawable/baseline_add_24"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="40dp"
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"/>
     <com.google.android.material.search.SearchView
         android:id="@+id/searchView"
         android:layout_width="match_parent"
@@ -45,26 +54,3 @@
             android:id="@+id/searchRecyclerView"/>
     </com.google.android.material.search.SearchView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-
-<!--<com.google.android.material.appbar.MaterialToolbar-->
-<!--android:id="@+id/materialToolbar"-->
-<!--android:layout_width="match_parent"-->
-<!--android:layout_margin="10dp"-->
-<!--android:layout_height="50dp"-->
-<!--android:background="@drawable/search_bar_background"-->
-<!--android:backgroundTint="?attr/colorControlHighlight"-->
-<!--app:menu="@menu/searchbar_menu"-->
-<!--app:layout_constraintTop_toTopOf="parent">-->
-
-<!--<SearchView-->
-<!--    android:id="@+id/searchbar"-->
-<!--    android:layout_width="match_parent"-->
-<!--    android:layout_height="wrap_content"-->
-<!--    android:backgroundTint="?attr/colorControlHighlight"-->
-<!--    android:iconifiedByDefault="false"-->
-<!--    android:queryBackground="@android:color/transparent"-->
-<!--    android:queryHint="Search Contacts"-->
-<!--    app:layout_constraintTop_toTopOf="parent" />-->
-
-<!--</com.google.android.material.appbar.MaterialToolbar>-->
