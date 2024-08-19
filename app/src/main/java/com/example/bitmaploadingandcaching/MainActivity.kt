@@ -2,6 +2,8 @@ package com.example.bitmaploadingandcaching
 
 
 import android.Manifest
+import android.animation.LayoutTransition
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,16 +11,21 @@ import android.graphics.Color
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.view.View
 import android.widget.ActionMenuView
 import android.widget.SearchView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Transition
+import androidx.transition.Visibility
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.search.SearchBar
 import java.util.Locale
@@ -26,7 +33,6 @@ import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
-    private val SPEECH_RECOGNITION_REQ = 102
     private val REQUEST_RECORD_AUDIO_PERMISSION = 200
     private var permissionToRecordAccepted = false
     private lateinit var searchView:com.google.android.material.search.SearchView
@@ -47,6 +53,7 @@ class MainActivity : AppCompatActivity() {
             Color.argb(255,224,64,251))
     }
 
+    @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         loadImageList()
         super.onCreate(savedInstanceState)
@@ -61,12 +68,25 @@ class MainActivity : AppCompatActivity() {
         recyclerSearchView.adapter = adapter
         recyclerSearchView.layoutManager = LinearLayoutManager(this)
 
-        searchView = findViewById<com.google.android.material.search.SearchView>(R.id.searchView)
+        searchView = findViewById(R.id.searchView)
         val searchBar = findViewById<SearchBar>(R.id.searchBar)
 
-        var launchOnResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result ->
+        onBackPressedDispatcher.addCallback(this,object :OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+                if(searchView.isShowing){
+                    searchView.hide()
+                }
+                else{
+                    finish()
+                }
+            }
+
+        })
+        val launchOnResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result ->
             if(result.resultCode==Activity.RESULT_OK){
+                searchView.show()
                 val activityResult = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                println("Transition state: ${searchView.currentTransitionState}")
                 searchView.setText(activityResult?.get(0).toString())
             }
         }
@@ -107,16 +127,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode==SPEECH_RECOGNITION_REQ && resultCode == Activity.RESULT_OK){
-            val result = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-            println("RESULT: ${result?.get(0).toString()}")
-            searchView.setText(result?.get(0).toString())
-        }
-    }
 
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
