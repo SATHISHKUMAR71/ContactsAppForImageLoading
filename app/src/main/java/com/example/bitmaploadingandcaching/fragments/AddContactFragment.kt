@@ -55,7 +55,7 @@ class AddContactFragment : Fragment() {
             CacheData.addList(Contact(firstName.text.toString(),
                     dataImage.toString(),
                     HomeFragment.COLORS_LIST[Random.nextInt(0,10)],phoneNumber.text.toString(),false,true))
-            println("COntacts: Data : ${Contact(firstName.text.toString(),
+            println("Contacts: Data : ${Contact(firstName.text.toString(),
                 dataImage.toString(),
                 HomeFragment.COLORS_LIST[Random.nextInt(0,10)],phoneNumber.text.toString(),false,true)}")
             parentFragmentManager.popBackStack()
