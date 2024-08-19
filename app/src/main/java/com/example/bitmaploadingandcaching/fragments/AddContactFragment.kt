@@ -55,7 +55,14 @@ class AddContactFragment : Fragment() {
         saveBtn.setOnClickListener {
             if(firstName.text.toString().isNotEmpty() || lastName.text.toString().isNotEmpty() ||
                 companyName.text.toString().isNotEmpty() || phoneNumber.text.toString().isNotEmpty() || email.text.toString().isNotEmpty()){
-                CacheData.addList(Contact(firstName.text.toString(),
+                var name = firstName.text.toString()
+                if(firstName.text.toString().isEmpty()){
+                    name += lastName.text.toString()
+                }
+                else{
+                    name += " "+lastName.text.toString()
+                }
+                CacheData.addList(Contact(name,
                     dataImage.toString(),
                     HomeFragment.COLORS_LIST[Random.nextInt(0,10)],phoneNumber.text.toString(),false,true))
                 parentFragmentManager.popBackStack()

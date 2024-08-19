@@ -1,7 +1,6 @@
 package com.example.bitmaploadingandcaching.recyclerview
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.ConnectivityManager
@@ -19,8 +18,6 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.collection.LruCache
-import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bitmaploadingandcaching.dataclass.Contact
@@ -28,11 +25,11 @@ import com.example.bitmaploadingandcaching.dataclass.HolderWithPosition
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.fragments.HomeFragment
 import com.example.bitmaploadingandcaching.viewmodel.CacheData
-import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.UnknownHostException
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAdapter.ImageHolder>(){
 
@@ -44,16 +41,14 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
     private var pendingRequests = ConcurrentHashMap<String,MutableList<HolderWithPosition>>()
     private var pauseDownload = ConcurrentHashMap<String, HolderWithPosition>()
     private val handler = Handler(Looper.getMainLooper())
-    private var networkLost = true
-    private var updateUI = MutableLiveData(false)
-    private var size = 0
-    private var pos = 0
-//    private var threadPoolExecutor = ThreadPoolExecutor(20,40,2,TimeUnit.SECONDS,LinkedBlockingQueue())
+    private var networkLost = AtomicBoolean(true)
+
+    //    private var threadPoolExecutor = ThreadPoolExecutor(20,40,2,TimeUnit.SECONDS,LinkedBlockingQueue())
     private val connectivityManager = context.getSystemService(ConnectivityManager::class.java).apply {
         registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback(){
             override fun onAvailable(network: Network) {
                 super.onAvailable(network)
-                networkLost = false
+                networkLost.set(false)
                 downloadPendingRequests()
                 println("Network Available")
             }
@@ -65,7 +60,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
             override fun onLost(network: Network) {
                 super.onLost(network)
-                networkLost = true
+                networkLost.set(true)
                 println("Network Lost")
             }
 
@@ -189,7 +184,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                 var name = contactList[holder.absoluteAdapterPosition].name
 //                println("Thread Name: ${Thread.currentThread().id}  Task: ${holder.contactName.text}")
                 try {
-                    if (!networkLost) {
+                    if (!networkLost.get()) {
                         println("Download : $name ${Thread.currentThread().id} Started")
                         ongoingDownloads[imageUrl] = true
                         val url = URL(imageUrl).openConnection()
@@ -222,10 +217,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                         if (pendingRequests[imageUrl].isNullOrEmpty()) {
                             pendingRequests[imageUrl] = mutableListOf()
                         }
-                        if (position !in positionList) {
-                            positionList.add(position)
-                            pendingRequests[imageUrl]?.add(HolderWithPosition(holder, position))
-                        }
+                        check(position,holder,imageUrl)
                     }
 
                 } catch (e: UnknownHostException) {
@@ -235,10 +227,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                     if (pendingRequests[imageUrl].isNullOrEmpty()) {
                         pendingRequests[imageUrl] = mutableListOf()
                     }
-                    if (position !in positionList) {
-                        positionList.add(position)
-                        pendingRequests[imageUrl]?.add(HolderWithPosition(holder, position))
-                    }
+                    check(position,holder,imageUrl)
                 } catch (e: MalformedURLException) {
                     println("Download Error while Downloading : $name ${Thread.currentThread().id}")
                     ongoingDownloads[imageUrl] = true
@@ -253,10 +242,8 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
             if(pendingRequests[imageUrl].isNullOrEmpty()){
                 pendingRequests[imageUrl] = mutableListOf()
             }
-            if(position !in positionList){
-                positionList.add(position)
-                pendingRequests[imageUrl]?.add(HolderWithPosition(holder,position))
-            }
+            check(position,holder,imageUrl)
+
 //            pendingRequests[imageUrl]?.add(HolderWithPosition(holder,position))
             holder.imageView.visibility = View.INVISIBLE
         }
@@ -309,6 +296,15 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                     ongoingDownloads[it.key] = false
                 }
             }.start()
+        }
+    }
+
+    private fun check(position: Int,holder: ImageHolder,imageUrl: String){
+        synchronized(positionList){
+            if(position !in positionList){
+                positionList.add(position)
+                pendingRequests[imageUrl]?.add(HolderWithPosition(holder,position))
+            }
         }
     }
 }
