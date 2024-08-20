@@ -24,6 +24,8 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlin.random.Random
 
 
@@ -38,6 +40,8 @@ class AddContactFragment : Fragment() {
     private lateinit var email:TextInputEditText
     private lateinit var saveBtn:MaterialButton
     private lateinit var addNoteToolbar: MaterialToolbar
+    private lateinit var birthday:TextInputEditText
+    private lateinit var clearBirthdayDate:ImageButton
     private var dataImage:Uri = Uri.parse("")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +62,37 @@ class AddContactFragment : Fragment() {
         email = view.findViewById(R.id.email)
         saveBtn = view.findViewById(R.id.addContactSaveButton)
         addNoteToolbar = view.findViewById(R.id.addNoteToolbar)
+        birthday = view.findViewById(R.id.birthdayDate)
+        clearBirthdayDate = view.findViewById(R.id.clearBirthdayDate)
+        val datePicker = MaterialDatePicker.Builder.datePicker()
+            .setTitleText("Select Date")
+            .setTextInputFormat(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()))
+            .setInputMode(MaterialDatePicker.INPUT_MODE_TEXT)
+            .build()
+        birthday.setOnClickListener {
+            datePicker.show(parentFragmentManager,"Date Picker")
+        }
+        datePicker.addOnPositiveButtonClickListener {
+            println("@@@@@ positive btn called $it")
+            val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val formattedDate = date.format(it)
+            println("On Add Positive Button: ${it}")
+            println("On Add Positive Button: ${formattedDate}")
+            clearBirthdayDate.visibility = View.VISIBLE
+            birthday.setText(formattedDate)
+        }
+        clearBirthdayDate.setOnClickListener {
+            birthday.setText("")
+            clearBirthdayDate.visibility = View.INVISIBLE
+        }
+        datePicker.addOnNegativeButtonClickListener {
+            println("@@@@@ $it")
+//            val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+//            val formattedDate = date.format(it)
+//            println("On Add Positive Button: ${it}")
+//            println("On Add Positive Button: ${formattedDate}")
+//            birthday.setText(formattedDate)
+        }
         addNoteToolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
