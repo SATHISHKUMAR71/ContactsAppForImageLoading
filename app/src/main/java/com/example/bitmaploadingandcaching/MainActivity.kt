@@ -8,6 +8,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -17,6 +18,7 @@ import android.widget.SearchView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
@@ -28,8 +30,10 @@ import androidx.transition.Transition
 import androidx.transition.Visibility
 import com.example.bitmaploadingandcaching.fragments.HomeFragment
 import com.facebook.shimmer.ShimmerFrameLayout
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.search.SearchBar
+import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.random.Random
 
@@ -43,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         private var permissionToRecordAccepted = false
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
