@@ -131,7 +131,7 @@ class AddContactFragment : Fragment() {
                     }
                     CacheData.addList(Contact(name,
                         dataImage.toString(),
-                        HomeFragment.COLORS_LIST[Random.nextInt(0,10)],phoneNumber.text.toString(), isHighlighted = false,isUri = true),left)
+                        HomeFragment.COLORS_LIST[Random.nextInt(0,10)],phoneNumber.text.toString(), isHighlighted = false,isUri = true,birthday.text.toString()),left)
                     parentFragmentManager.popBackStack()
                     Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
                 }
