@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.setPadding
@@ -51,11 +52,14 @@ class AddContactFragment : Fragment() {
     private lateinit var phoneLabel:AutoCompleteTextView
     private lateinit var emailLabel:AutoCompleteTextView
     private lateinit var dateLabel:AutoCompleteTextView
+    private lateinit var emailContainer:LinearLayout
+    private lateinit var phoneContainer:LinearLayout
+    private lateinit var dateContainer:LinearLayout
+    private var oneTimeGeneratePhone = 0
+    private var oneTimeGenerateEmail = 0
+    private var oneTimeGenerateDate = 0
     private var dataImage:Uri = Uri.parse("")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
 
-    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -78,6 +82,9 @@ class AddContactFragment : Fragment() {
         phoneLabel = view.findViewById(R.id.phoneNumberLabel)
         emailLabel = view.findViewById(R.id.emailLabel)
         dateLabel = view.findViewById(R.id.significantDateLabel)
+        phoneContainer = view.findViewById(R.id.linearLayoutPhoneContainer)
+        emailContainer = view.findViewById(R.id.linearLayoutEmailContainer)
+        dateContainer = view.findViewById(R.id.linearLayoutDateContainer)
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Select the Birthday Date")
             .setTextInputFormat(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()))
@@ -105,18 +112,30 @@ class AddContactFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 if(s?.isNotEmpty()!=true){
                     clearEmail.visibility = View.VISIBLE
+                    if(oneTimeGenerateEmail==0){
+                        addEmailLayout()
+                        oneTimeGenerateEmail++
+                    }
                 }
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 if(s?.isNotEmpty()!=true){
                     clearEmail.visibility = View.VISIBLE
+                    if(oneTimeGenerateEmail==0){
+                        addEmailLayout()
+                        oneTimeGenerateEmail++
+                    }
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {
                 if(s?.isNotEmpty()!=true){
                     clearEmail.visibility = View.VISIBLE
+                    if(oneTimeGenerateEmail==0){
+                        addEmailLayout()
+                        oneTimeGenerateEmail++
+                    }
                 }
             }
         })
@@ -125,19 +144,32 @@ class AddContactFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 if(s?.isNotEmpty()!=true){
                     clearPhone.visibility = View.VISIBLE
+                    if(oneTimeGeneratePhone==0){
+                        addPhoneLayout()
+                        oneTimeGeneratePhone++
+                    }
                 }
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 if(s?.isNotEmpty()!=true){
                     clearPhone.visibility = View.VISIBLE
+                    if(oneTimeGeneratePhone==0){
+                        addPhoneLayout()
+                        oneTimeGeneratePhone++
+                    }
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {
                 if(s?.isNotEmpty()!=true){
                     clearPhone.visibility = View.VISIBLE
+                    if(oneTimeGeneratePhone==0){
+                        addPhoneLayout()
+                        oneTimeGeneratePhone++
+                    }
                 }
+
             }
         })
 
@@ -148,15 +180,13 @@ class AddContactFragment : Fragment() {
             println("On Add Positive Button: ${formattedDate}")
             clearBirthdayDate.visibility = View.VISIBLE
             birthday.setText(formattedDate)
+            addDateLayout()
         }
         clearBirthdayDate.setOnClickListener {
             dateLabel.text = null
             dateLabel.clearFocus()
             birthday.setText("")
             clearBirthdayDate.visibility = View.INVISIBLE
-        }
-        datePicker.addOnNegativeButtonClickListener {
-            println("@@@@@ $it")
         }
         addNoteToolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
@@ -228,5 +258,118 @@ class AddContactFragment : Fragment() {
             launchImage.launch(i)
         }
         return view
+    }
+
+    private fun addPhoneLayout() {
+        val anotherPhoneView=LayoutInflater.from(requireContext()).inflate(R.layout.phone_layout,phoneContainer,false)
+        val layoutPhoneNumber = anotherPhoneView.findViewById<TextInputEditText>(R.id.phoneNumber)
+        val layoutClearPhone = anotherPhoneView.findViewById<ImageButton>(R.id.clearPhone)
+        val layoutPhoneLabel =anotherPhoneView.findViewById<AutoCompleteTextView>(R.id.phoneNumberLabel)
+        layoutPhoneNumber.id = View.generateViewId()
+        layoutClearPhone.id = View.generateViewId()
+        layoutPhoneLabel.id = View.generateViewId()
+
+        layoutPhoneNumber.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                if(s?.isNotEmpty()!=true){
+                    layoutClearPhone.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if(s?.isNotEmpty()!=true){
+                    layoutClearPhone.visibility = View.VISIBLE
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                if(s?.isNotEmpty()!=true){
+                    layoutClearPhone.visibility = View.VISIBLE
+                }
+            }
+        })
+
+        layoutClearPhone.setOnClickListener{
+            layoutPhoneLabel.text = null
+            layoutPhoneLabel.clearFocus()
+            layoutPhoneNumber.setText("")
+            layoutClearPhone.visibility =View.INVISIBLE
+            phoneContainer.removeView(anotherPhoneView)
+            oneTimeGeneratePhone=0
+        }
+        phoneContainer.addView(anotherPhoneView)
+    }
+
+    private fun addEmailLayout() {
+        val anotherPhoneView=LayoutInflater.from(requireContext()).inflate(R.layout.email_layout,emailContainer,false)
+        val layoutEmail = anotherPhoneView.findViewById<TextInputEditText>(R.id.email)
+        val layoutClearEmail = anotherPhoneView.findViewById<ImageButton>(R.id.clearEmail)
+        val layoutEmailLabel =anotherPhoneView.findViewById<AutoCompleteTextView>(R.id.emailLabel)
+        layoutEmail.id = View.generateViewId()
+        layoutClearEmail.id = View.generateViewId()
+        layoutEmailLabel.id = View.generateViewId()
+
+        layoutEmail.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                if(s?.isNotEmpty()!=true){
+                    layoutClearEmail.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if(s?.isNotEmpty()!=true){
+                    layoutClearEmail.visibility = View.VISIBLE
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                if(s?.isNotEmpty()!=true){
+                    layoutClearEmail.visibility = View.VISIBLE
+                }
+            }
+        })
+
+        layoutClearEmail.setOnClickListener{
+            layoutEmailLabel.text = null
+            layoutEmailLabel.clearFocus()
+            layoutEmail.setText("")
+            layoutClearEmail.visibility =View.INVISIBLE
+            emailContainer.removeView(anotherPhoneView)
+            oneTimeGenerateEmail=0
+        }
+        emailContainer.addView(anotherPhoneView)
+    }
+
+    private fun addDateLayout() {
+        val anotherPhoneView=LayoutInflater.from(requireContext()).inflate(R.layout.date_layout,dateContainer,false)
+        val layoutBirthday = anotherPhoneView.findViewById<TextInputEditText>(R.id.birthdayDate)
+        val layoutClearDate = anotherPhoneView.findViewById<ImageButton>(R.id.clearBirthdayDate)
+        val layoutDateLabel =anotherPhoneView.findViewById<AutoCompleteTextView>(R.id.significantDateLabel)
+        layoutBirthday.id = View.generateViewId()
+        layoutClearDate.id = View.generateViewId()
+        layoutDateLabel.id = View.generateViewId()
+        val datePicker = MaterialDatePicker.Builder.datePicker()
+            .setTitleText("Select the Birthday Date")
+            .setTextInputFormat(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()))
+            .setInputMode(MaterialDatePicker.INPUT_MODE_TEXT)
+            .build()
+        layoutBirthday.setOnClickListener {
+            datePicker.show(parentFragmentManager,"Date Picker")
+        }
+        datePicker.addOnPositiveButtonClickListener {
+            val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val formattedDate = date.format(it)
+            layoutClearDate.visibility = View.VISIBLE
+            layoutBirthday.setText(formattedDate)
+        }
+        layoutClearDate.setOnClickListener{
+            layoutDateLabel.text = null
+            layoutDateLabel.clearFocus()
+            layoutBirthday.setText("")
+            layoutClearDate.visibility =View.INVISIBLE
+            dateContainer.removeView(anotherPhoneView)
+            oneTimeGenerateDate = 0
+        }
+        dateContainer.addView(anotherPhoneView)
     }
 }

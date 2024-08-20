@@ -164,7 +164,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/linearLayout"
+            android:id="@+id/linearLayoutPhoneContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -237,6 +237,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/linearLayoutPhone">
 
                     <AutoCompleteTextView
+                        android:contentDescription="Phone Type"
                         android:id="@+id/phoneNumberLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
@@ -248,13 +249,13 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/linearLayout2"
+            android:id="@+id/linearLayoutEmailContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+            app:layout_constraintTop_toBottomOf="@+id/linearLayoutPhoneContainer">
 
             <LinearLayout
                 android:id="@+id/linearLayoutEmail"
@@ -320,6 +321,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/linearLayoutPhone">
 
                     <AutoCompleteTextView
+                        android:contentDescription="Email Type"
                         android:id="@+id/emailLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
@@ -332,10 +334,11 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/linearLayoutDateContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
+            app:layout_constraintTop_toBottomOf="@+id/linearLayoutEmailContainer">
 
             <LinearLayout
                 android:id="@+id/linearLayoutBirthdayDate"
@@ -401,6 +404,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/linearLayoutPhone">
 
                     <AutoCompleteTextView
+                        android:contentDescription="Date Type"
                         android:id="@+id/significantDateLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
