@@ -1,5 +1,6 @@
 package com.example.bitmaploadingandcaching.fragments
 
+import android.animation.AnimatorSet
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -125,7 +126,6 @@ class AddContactFragment : Fragment() {
             val i = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             launchImage.launch(i)
         }
-
         return view
     }
 }

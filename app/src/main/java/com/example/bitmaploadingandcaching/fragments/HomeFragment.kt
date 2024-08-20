@@ -1,6 +1,10 @@
 package com.example.bitmaploadingandcaching.fragments
 
 import android.Manifest
+import android.animation.Animator
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
@@ -88,14 +92,16 @@ class HomeFragment : Fragment() {
         searchView = view.findViewById(R.id.searchView)
         val searchBar = view.findViewById<SearchBar>(R.id.searchBar)
         addContact = view.findViewById(R.id.addContacts)
+
         addContactFragment =  AddContactFragment()
         addContact.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .setCustomAnimations(
-                    R.anim.slide_in,
-                    R.anim.fade_out,
-                    R.anim.fade_in,
-                    R.anim.slide_out)
+                    R.anim.slide_in, //(Enter transition fragment enter the screen)
+                    R.anim.fade_out, //(exit transition fragment exit the screen)
+                    R.anim.fade_in, //(pop enter transition user navigates back to the fragment)
+                    R.anim.slide_out //(pop exit transition fragment removed from the screen)
+                )
                 .replace(R.id.fragmentContainerView,addContactFragment)
                 .addToBackStack("Add Contact")
                 .commit()
