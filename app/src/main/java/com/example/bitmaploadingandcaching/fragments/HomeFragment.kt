@@ -185,6 +185,7 @@ class HomeFragment : Fragment() {
 //        Search View Transition Listener
         searchView.addTransitionListener { searchView, previousState, newState ->
             if(newState == com.google.android.material.search.SearchView.TransitionState.HIDING){
+                searchView.editText.setText("")
                 adapter.resetViews(contactList,null)
             }
         }

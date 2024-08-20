@@ -71,22 +71,36 @@ class AddContactFragment : Fragment() {
                 else{
                     name += " "+lastName.text.toString()
                 }
-
-                while (left<right){
-                    val mid = (left+right) / 2
-                    if(CacheData.list[mid].name<name){
-                        left = mid+1
+                if(name.isEmpty()){
+                    if(email.text.toString().isNotEmpty()){
+                        name = email.text.toString()
                     }
-                    else{
-                        right = mid
+                    else if(phoneNumber.text.toString().isNotEmpty()){
+                        name = phoneNumber.text.toString()
+                    }
+                    else if(companyName.text.toString().isNotEmpty()){
+                        name = companyName.text.toString()
                     }
                 }
-                println("$$$$ ${CacheData.list[left]}")
-                CacheData.addList(Contact(name,
-                    dataImage.toString(),
-                    HomeFragment.COLORS_LIST[Random.nextInt(0,10)],phoneNumber.text.toString(), isHighlighted = false,isUri = true),left)
-                parentFragmentManager.popBackStack()
-                Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
+                if(name.isNotEmpty()){
+                    while (left<right){
+                        val mid = (left+right) / 2
+                        if(CacheData.list[mid].name.lowercase()<name.lowercase()){
+                            left = mid+1
+                        }
+                        else{
+                            right = mid
+                        }
+                    }
+                    CacheData.addList(Contact(name,
+                        dataImage.toString(),
+                        HomeFragment.COLORS_LIST[Random.nextInt(0,10)],phoneNumber.text.toString(), isHighlighted = false,isUri = true),left)
+                    parentFragmentManager.popBackStack()
+                    Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
+                }
+                else{
+                    Toast.makeText(requireContext(),"Add Info To Save as a Contact",Toast.LENGTH_SHORT).show()
+                }
             }
             else{
                 Toast.makeText(requireContext(),"Add Info To Save as a Contact",Toast.LENGTH_SHORT).show()

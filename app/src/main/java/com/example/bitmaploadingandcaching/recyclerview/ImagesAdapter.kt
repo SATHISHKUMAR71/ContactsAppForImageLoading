@@ -92,12 +92,12 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         holder.profileName.text = contactList[holder.absoluteAdapterPosition].name[0].toString().uppercase()
         searchQuery = HomeFragment.queryReceived
 //        println("ON Bind View Holder Called")
-        updateSearchedView(holder)
         holder.callButton.setOnClickListener{
             Toast.makeText(context,"Can't Make a Call Please insert a SIM",Toast.LENGTH_SHORT).show()
         }
         holder.profileName.background.setTint(contactList[holder.absoluteAdapterPosition].contactColor)
         holder.mobileNumber.text = contactList[holder.absoluteAdapterPosition].contactNumber
+        updateSearchedView(holder)
         if(!contactList[holder.absoluteAdapterPosition].isUri){
             println("1234 in download : ${contactList[position].name}")
             loadImage(holder,position,contactList[position].image)
@@ -114,6 +114,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                 }
             }
         }
+
     }
 
 
@@ -146,12 +147,14 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
             val highlightedName = SpannableString(contactList[position].name)
             while (startIndex>=0){
                 val endIndex = startIndex+length
-                highlightedName.setSpan(
-                    ForegroundColorSpan(Color.argb(255,255,20,20)), // You can choose any color
-                    startIndex,
-                    endIndex,
-                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
-                )
+                if(endIndex>startIndex){
+                    highlightedName.setSpan(
+                        ForegroundColorSpan(Color.argb(255,255,20,20)), // You can choose any color
+                        startIndex,
+                        endIndex,
+                        Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                    )
+                }
                 startIndex = contactList[position].name.indexOf(searchQuery,endIndex, ignoreCase = true)
             }
 
@@ -159,14 +162,16 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
             var startIndexMobile = contactList[position].contactNumber.indexOf(searchQuery, ignoreCase = true)
             val highlightedMobile = SpannableString(contactList[position].contactNumber)
             while (startIndexMobile>=0){
-                val endIndex = startIndex+length
-                highlightedMobile.setSpan(
-                    ForegroundColorSpan(Color.argb(255,255,20,20)), // You can choose any color
-                    startIndexMobile,
-                    endIndex,
-                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
-                )
-                startIndexMobile = contactList[position].name.indexOf(searchQuery,endIndex, ignoreCase = true)
+                val endIndex = startIndexMobile+length
+                if(endIndex>startIndexMobile){
+                    highlightedMobile.setSpan(
+                        ForegroundColorSpan(Color.argb(255,255,20,20)), // You can choose any color
+                        startIndexMobile,
+                        endIndex,
+                        Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                    )
+                }
+                startIndexMobile = contactList[position].contactNumber.indexOf(searchQuery,endIndex, ignoreCase = true)
             }
             holder.contactName.text = highlightedName
             holder.mobileNumber.text = highlightedMobile
