@@ -77,6 +77,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         val profileName:TextView = itemView.findViewById(R.id.textName)
         val callButton:ImageButton = itemView.findViewById(R.id.callButton)
         val mobileNumber:TextView = itemView.findViewById(R.id.mobileNumber)
+        val mobileText:TextView =itemView.findViewById(R.id.mobile)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageHolder {
@@ -90,6 +91,14 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
     override fun onBindViewHolder(holder: ImageHolder, position: Int) {
         holder.contactName.text = contactList[holder.absoluteAdapterPosition].name
         holder.profileName.text = contactList[holder.absoluteAdapterPosition].name[0].toString().uppercase()
+        if(contactList[holder.absoluteAdapterPosition].contactNumber.isEmpty()){
+            holder.mobileText.visibility = View.GONE
+            holder.mobileNumber.visibility = View.GONE
+        }
+        else{
+            holder.mobileText.visibility = View.VISIBLE
+            holder.mobileNumber.visibility = View.VISIBLE
+        }
         searchQuery = HomeFragment.queryReceived
 //        println("ON Bind View Holder Called")
         holder.callButton.setOnClickListener{
@@ -120,7 +129,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
     fun resetViews(newList:List<Contact>, query:String?){
-        println("On Reset View")
+        println("On Reset View :${newList[0]}")
         val contactDiff = ContactsDiffUtil(contactList, newList)
         val diffResult = DiffUtil.calculateDiff(contactDiff)
         contactList.clear()
@@ -277,7 +286,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                     bitmapCache.put(it.key, downloadedImage)
                     handler.post {
                         var i = 0
-                        if (it.value.holder.adapterPosition == it.value.position) {
+                        if (it.value.holder.absoluteAdapterPosition == it.value.position) {
                             i += 1
                             it.value.holder.imageView.setImageBitmap(downloadedImage)
                             it.value.holder.imageView.visibility = View.VISIBLE
@@ -286,7 +295,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                         pendingRequests[it.key]?.forEach { applyChange ->
                             i += 1
 //                        println("adapter position: ${applyChange.holder.adapterPosition} item position: ${applyChange.position}")
-                            if (applyChange.holder.adapterPosition == applyChange.position) {
+                            if (applyChange.holder.absoluteAdapterPosition == applyChange.position) {
                                 j += 1
                                 applyChange.holder.imageView.setImageBitmap(downloadedImage)
                                 applyChange.holder.imageView.visibility = View.VISIBLE

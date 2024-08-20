@@ -11,6 +11,7 @@ class CacheData:ViewModel() {
     companion object{
         var list:MutableList<Contact> = mutableListOf()
         var i = loadContactList()
+        var position = -1
         var bitmapCache = LruCache<String, Bitmap>((Runtime.getRuntime().maxMemory()/4).toInt())
         fun addList(newContact:Contact){
             list.add(0,newContact)
@@ -18,6 +19,7 @@ class CacheData:ViewModel() {
 
         fun addList(newContact:Contact,pos:Int){
             list.add(pos,newContact)
+            position = pos
             println("1234 : $newContact")
         }
 

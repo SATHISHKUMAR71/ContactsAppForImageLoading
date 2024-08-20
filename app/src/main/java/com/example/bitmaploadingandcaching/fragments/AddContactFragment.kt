@@ -87,11 +87,6 @@ class AddContactFragment : Fragment() {
         }
         datePicker.addOnNegativeButtonClickListener {
             println("@@@@@ $it")
-//            val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-//            val formattedDate = date.format(it)
-//            println("On Add Positive Button: ${it}")
-//            println("On Add Positive Button: ${formattedDate}")
-//            birthday.setText(formattedDate)
         }
         addNoteToolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
