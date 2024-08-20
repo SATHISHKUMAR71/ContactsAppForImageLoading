@@ -99,14 +99,16 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         holder.profileName.background.setTint(contactList[holder.absoluteAdapterPosition].contactColor)
         holder.mobileNumber.text = contactList[holder.absoluteAdapterPosition].contactNumber
         if(!contactList[holder.absoluteAdapterPosition].isUri){
+            println("1234 in download : ${contactList[position].name}")
             loadImage(holder,position,contactList[position].image)
         }
         else{
-            println("IMAGE URI: ${contactList[holder.absoluteAdapterPosition].image}")
-            if(holder.absoluteAdapterPosition == position){
-                val i = context.contentResolver.query(Uri.parse(contactList[holder.absoluteAdapterPosition].image),null,null,null,null)
-                if(i?.moveToNext()==true){
-                    holder.imageView.setImageURI(Uri.parse(contactList[holder.absoluteAdapterPosition].image))
+            holder.imageView.visibility = View.INVISIBLE
+            val i = context.contentResolver.query(Uri.parse(contactList[position].image),null,null,null,null)
+            if(i?.moveToNext()==true){
+                println("1234 IMAGE URI: $i")
+                if(holder.absoluteAdapterPosition == position){
+                    holder.imageView.setImageURI(Uri.parse(contactList[position].image))
                     holder.imageView.visibility = View.VISIBLE
                     i.close()
                 }
@@ -126,11 +128,9 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         if(query!=null){
             if(query.isNotEmpty()){
 //                updateUI.value = true
-                println("Search is Happened")
                 notifyItemRangeChanged(0,newList.size)
             }
             else{
-                println("Search is Happened IN Else")
                 notifyItemRangeChanged(0,newList.size)
             }
         }
@@ -138,7 +138,6 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
     private fun updateSearchedView(holder: ImageHolder) {
-        println("ON UPDATE SEARCH")
         val position = holder.absoluteAdapterPosition
         val length = searchQuery.length
         if(contactList[position].isHighlighted && searchQuery.isNotEmpty()){
@@ -177,7 +176,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
     private fun loadImage(holder: ImageHolder, position: Int, imageUrl: String){
-        println("IN ELSE Load Image Called $position")
+//        println("IN ELSE Load Image Called $position")
         if((bitmapCache.get(imageUrl)==null) && (ongoingDownloads[imageUrl]!=true)) {
             holder.imageView.visibility = View.INVISIBLE
             Thread {

@@ -24,7 +24,6 @@ import com.example.bitmaploadingandcaching.MainActivity
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.viewmodel.CacheData
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.search.SearchBar
 import java.util.Locale
 import kotlin.random.Random
@@ -92,6 +91,11 @@ class HomeFragment : Fragment() {
         addContactFragment =  AddContactFragment()
         addContact.setOnClickListener {
             parentFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    R.anim.slide_in,
+                    R.anim.fade_out,
+                    R.anim.fade_in,
+                    R.anim.slide_out)
                 .replace(R.id.fragmentContainerView,addContactFragment)
                 .addToBackStack("Add Contact")
                 .commit()
@@ -120,7 +124,9 @@ class HomeFragment : Fragment() {
                 searchView.show()
                 val activityResult = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
                 println("Transition state: ${searchView.currentTransitionState}")
-                searchView.setText(activityResult?.get(0).toString())
+                val textOutput = activityResult?.get(0).toString()
+                searchView.setText(textOutput)
+                searchView.editText.setSelection(textOutput.length)
             }
         }
 
@@ -192,7 +198,7 @@ class HomeFragment : Fragment() {
     private fun getContactList(query:String,list: List<Contact>):List<Contact>{
         val queriedList:MutableList<Contact> = mutableListOf()
         for(i in list){
-
+            println("1234 In Search Query")
             if((query.lowercase() in i.name.lowercase()) || (query.lowercase() in i.contactNumber.lowercase())){
                 queriedList.add(i.copy(isHighlighted = true))
             }

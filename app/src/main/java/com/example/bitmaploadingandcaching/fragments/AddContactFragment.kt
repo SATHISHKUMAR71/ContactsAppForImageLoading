@@ -17,6 +17,8 @@ import androidx.core.view.setPadding
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.dataclass.Contact
 import com.example.bitmaploadingandcaching.viewmodel.CacheData
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -33,6 +35,7 @@ class AddContactFragment : Fragment() {
     private lateinit var phoneNumber:TextInputEditText
     private lateinit var email:TextInputEditText
     private lateinit var saveBtn:MaterialButton
+    private lateinit var addNoteToolbar: MaterialToolbar
     private var dataImage:Uri = Uri.parse("")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +55,12 @@ class AddContactFragment : Fragment() {
         phoneNumber = view.findViewById(R.id.phoneNumber)
         email = view.findViewById(R.id.email)
         saveBtn = view.findViewById(R.id.addContactSaveButton)
+        addNoteToolbar = view.findViewById(R.id.addNoteToolbar)
+        addNoteToolbar.setNavigationOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+        var left = 0
+        var right = CacheData.list.size
         saveBtn.setOnClickListener {
             if(firstName.text.toString().isNotEmpty() || lastName.text.toString().isNotEmpty() ||
                 companyName.text.toString().isNotEmpty() || phoneNumber.text.toString().isNotEmpty() || email.text.toString().isNotEmpty()){
@@ -62,9 +71,20 @@ class AddContactFragment : Fragment() {
                 else{
                     name += " "+lastName.text.toString()
                 }
+
+                while (left<right){
+                    val mid = (left+right) / 2
+                    if(CacheData.list[mid].name<name){
+                        left = mid+1
+                    }
+                    else{
+                        right = mid
+                    }
+                }
+                println("$$$$ ${CacheData.list[left]}")
                 CacheData.addList(Contact(name,
                     dataImage.toString(),
-                    HomeFragment.COLORS_LIST[Random.nextInt(0,10)],phoneNumber.text.toString(),false,true))
+                    HomeFragment.COLORS_LIST[Random.nextInt(0,10)],phoneNumber.text.toString(), isHighlighted = false,isUri = true),left)
                 parentFragmentManager.popBackStack()
                 Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
             }
@@ -94,5 +114,4 @@ class AddContactFragment : Fragment() {
 
         return view
     }
-
 }
