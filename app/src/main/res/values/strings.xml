@@ -3,8 +3,32 @@
     <string name="image">Image</string>
     <string name="search_contacts">Search Contacts</string>
     <string name="add_contact">Add Contact</string>
-    <!-- TODO: Remove or change this placeholder text -->
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="add_picture">Add Picture</string>
     <string name="save">Save</string>
+    <string name="label">Label</string>
+    <string-array name="phoneNumberLabel">
+        <item>Mobile</item>
+        <item>Whatsapp</item>
+        <item>Home</item>
+        <item>Work</item>
+        <item>Personnel</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="emailLabel">
+        <item>Secondary</item>
+        <item>Primary</item>
+        <item>Home</item>
+        <item>Work</item>
+        <item>Personnel</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="dateLabel">
+        <item>Birthday</item>
+        <item>Anniversary</item>
+        <item>Other</item>
+    </string-array>
 </resources>

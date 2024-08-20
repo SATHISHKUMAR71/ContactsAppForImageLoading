@@ -6,10 +6,14 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Toast
@@ -42,6 +46,11 @@ class AddContactFragment : Fragment() {
     private lateinit var addNoteToolbar: MaterialToolbar
     private lateinit var birthday:TextInputEditText
     private lateinit var clearBirthdayDate:ImageButton
+    private lateinit var clearEmail:ImageButton
+    private lateinit var clearPhone:ImageButton
+    private lateinit var phoneLabel:AutoCompleteTextView
+    private lateinit var emailLabel:AutoCompleteTextView
+    private lateinit var dateLabel:AutoCompleteTextView
     private var dataImage:Uri = Uri.parse("")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,16 +73,75 @@ class AddContactFragment : Fragment() {
         addNoteToolbar = view.findViewById(R.id.addNoteToolbar)
         birthday = view.findViewById(R.id.birthdayDate)
         clearBirthdayDate = view.findViewById(R.id.clearBirthdayDate)
+        clearEmail =view.findViewById(R.id.clearEmail)
+        clearPhone = view.findViewById(R.id.clearPhone)
+        phoneLabel = view.findViewById(R.id.phoneNumberLabel)
+        emailLabel = view.findViewById(R.id.emailLabel)
+        dateLabel = view.findViewById(R.id.significantDateLabel)
         val datePicker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText("Select Date")
+            .setTitleText("Select the Birthday Date")
             .setTextInputFormat(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()))
             .setInputMode(MaterialDatePicker.INPUT_MODE_TEXT)
             .build()
         birthday.setOnClickListener {
             datePicker.show(parentFragmentManager,"Date Picker")
         }
+
+        clearPhone.setOnClickListener {
+            phoneLabel.text = null
+            phoneLabel.clearFocus()
+            phoneNumber.setText("")
+            clearPhone.visibility =View.INVISIBLE
+        }
+
+        clearEmail.setOnClickListener {
+            emailLabel.text = null
+            emailLabel.clearFocus()
+            email.setText("")
+            clearEmail.visibility =View.INVISIBLE
+        }
+
+        email.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                if(s?.isNotEmpty()!=true){
+                    clearEmail.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if(s?.isNotEmpty()!=true){
+                    clearEmail.visibility = View.VISIBLE
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                if(s?.isNotEmpty()!=true){
+                    clearEmail.visibility = View.VISIBLE
+                }
+            }
+        })
+
+        phoneNumber.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                if(s?.isNotEmpty()!=true){
+                    clearPhone.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if(s?.isNotEmpty()!=true){
+                    clearPhone.visibility = View.VISIBLE
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                if(s?.isNotEmpty()!=true){
+                    clearPhone.visibility = View.VISIBLE
+                }
+            }
+        })
+
         datePicker.addOnPositiveButtonClickListener {
-            println("@@@@@ positive btn called $it")
             val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             val formattedDate = date.format(it)
             println("On Add Positive Button: ${it}")
@@ -82,6 +150,8 @@ class AddContactFragment : Fragment() {
             birthday.setText(formattedDate)
         }
         clearBirthdayDate.setOnClickListener {
+            dateLabel.text = null
+            dateLabel.clearFocus()
             birthday.setText("")
             clearBirthdayDate.visibility = View.INVISIBLE
         }
