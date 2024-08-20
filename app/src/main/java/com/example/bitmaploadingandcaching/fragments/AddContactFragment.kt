@@ -1,6 +1,5 @@
 package com.example.bitmaploadingandcaching.fragments
 
-import android.animation.AnimatorSet
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -12,7 +11,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -25,12 +23,10 @@ import androidx.core.view.size
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.dataclass.Contact
 import com.example.bitmaploadingandcaching.viewmodel.CacheData
-import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.random.Random
@@ -48,8 +44,8 @@ class AddContactFragment : Fragment() {
     private lateinit var emailContainer:LinearLayout
     private lateinit var phoneContainer:LinearLayout
     private lateinit var dateContainer:LinearLayout
-    private var significantDate:MutableList<String> = mutableListOf()
-    private var contactNumber:MutableList<String> = mutableListOf()
+    private var significantDate:MutableMap<String,String> = mutableMapOf()
+    private var contactNumber:MutableMap<String,String> = mutableMapOf()
     private var oneTimeGeneratePhone = 0
     private var oneTimeGenerateEmail = 0
     private var oneTimeGenerateDate = 0
@@ -115,7 +111,7 @@ class AddContactFragment : Fragment() {
                     if((contactNumber.size>0)&&(significantDate.size>0)){
                         CacheData.addList(Contact(name,
                             dataImage.toString(),
-                            HomeFragment.COLORS_LIST[Random.nextInt(0,10)],contactNumber[0], isHighlighted = false,isUri = true,significantDate[0]),left)
+                            HomeFragment.COLORS_LIST[Random.nextInt(0,10)],contactNumber["1"]?:"", isHighlighted = false,isUri = true,significantDate["1"]?:""),left)
                     }
                     else{
                         CacheData.addList(Contact(name,
@@ -170,8 +166,9 @@ class AddContactFragment : Fragment() {
         layoutClearPhone.id = View.generateViewId()
         layoutPhoneLabel.id = View.generateViewId()
         layoutPhoneNumber.setOnFocusChangeListener { v, hasFocus ->
+
             if(!hasFocus && v.isVisible){
-                contactNumber.add(phone)
+                contactNumber[phoneContainer.size.toString()] = phone
                 println("*** phone added: $phone")
             }
         }
@@ -302,7 +299,7 @@ class AddContactFragment : Fragment() {
             layoutClearDate.visibility = View.VISIBLE
             layoutBirthday.setText(formattedDate)
             tmpDate = formattedDate
-            significantDate.add(tmpDate)
+            significantDate[dateContainer.size.toString()] = tmpDate
             println("*** date added $tmpDate")
             addDateLayout()
         }
