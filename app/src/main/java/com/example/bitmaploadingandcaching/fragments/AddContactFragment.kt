@@ -112,13 +112,17 @@ class AddContactFragment : Fragment() {
                             right = mid
                         }
                     }
-                    CacheData.addList(Contact(name,
-                        dataImage.toString(),
-                        HomeFragment.COLORS_LIST[Random.nextInt(0,10)],contactNumber[0]?:"", isHighlighted = false,isUri = true,significantDate[0]?:""),left)
+                    if((contactNumber.size>0)&&(significantDate.size>0)){
+                        CacheData.addList(Contact(name,
+                            dataImage.toString(),
+                            HomeFragment.COLORS_LIST[Random.nextInt(0,10)],contactNumber[0], isHighlighted = false,isUri = true,significantDate[0]),left)
+                    }
+                    else{
+                        CacheData.addList(Contact(name,
+                            dataImage.toString(),
+                            HomeFragment.COLORS_LIST[Random.nextInt(0,10)],"", isHighlighted = false,isUri = true,""),left)
 
-                    println("99999 Date ${Contact(name,
-                        dataImage.toString(),
-                        HomeFragment.COLORS_LIST[Random.nextInt(0,10)],contactNumber[0]?:"", isHighlighted = false,isUri = true,significantDate[0]?:"")}")
+                    }
                     parentFragmentManager.popBackStack()
                     Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
                 }
