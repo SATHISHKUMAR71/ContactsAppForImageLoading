@@ -20,7 +20,6 @@ class CacheData:ViewModel() {
         fun addList(newContact:Contact,pos:Int){
             list.add(pos,newContact)
             position = pos
-            println("1234 : $newContact")
         }
 
         private fun loadContactList():MutableList<Contact> {

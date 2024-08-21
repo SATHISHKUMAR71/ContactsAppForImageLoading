@@ -112,8 +112,6 @@ class AddContactFragment : Fragment() {
                         CacheData.addList(Contact(name,
                             dataImage.toString(),
                             HomeFragment.COLORS_LIST[Random.nextInt(0,10)],contactNumber["2"]?:"", isHighlighted = false,isUri = true,significantDate["1"]?:""),left)
-                    println(contactNumber.toString())
-                    println(significantDate.toString())
                     parentFragmentManager.popBackStack()
                     Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
                 }
@@ -129,7 +127,6 @@ class AddContactFragment : Fragment() {
         var launchImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
             if(result.resultCode == Activity.RESULT_OK){
                 var image = result.data?.data
-                println("Image: $image")
                 dataImage = image?:Uri.parse("")
                 addPictureImg.setPadding(0)
                 addPictureImg.setImageURI(image)
@@ -164,7 +161,6 @@ class AddContactFragment : Fragment() {
 
             if(!hasFocus && v.isVisible){
                 contactNumber[phoneContainer.size.toString()] = phone
-                println("*** phone added: $phone")
             }
         }
         layoutPhoneNumber.addTextChangedListener(object : TextWatcher{
@@ -178,7 +174,6 @@ class AddContactFragment : Fragment() {
 
             override fun afterTextChanged(s: Editable?) {
                 if(s?.isNotEmpty()==true){
-                    println("*** after $s $phone")
                     layoutClearPhone.visibility = View.VISIBLE
                     phone = "$s"
                     if(oneTime==0){
@@ -209,7 +204,6 @@ class AddContactFragment : Fragment() {
             .scaleY(1f)
             .setDuration(300)
             .start()
-        println("*** ${phoneContainer.size}")
     }
 
     private fun addEmailLayout() {
@@ -265,7 +259,6 @@ class AddContactFragment : Fragment() {
             .scaleX(1f)
             .setDuration(300)
             .start()
-        println("*** ${emailContainer.size}")
     }
 
     private fun addDateLayout() {
@@ -295,7 +288,6 @@ class AddContactFragment : Fragment() {
             layoutBirthday.setText(formattedDate)
             tmpDate = formattedDate
             significantDate[dateContainer.size.toString()] = tmpDate
-            println("*** date added $tmpDate")
             addDateLayout()
         }
         layoutClearDate.setOnClickListener{
@@ -315,8 +307,6 @@ class AddContactFragment : Fragment() {
             .scaleY(1f)
             .setDuration(300)
             .start()
-
-        println("*** ${dateContainer.size}")
     }
 
     private fun removeEmailLayout(view: View){

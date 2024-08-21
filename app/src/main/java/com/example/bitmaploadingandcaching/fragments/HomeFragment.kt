@@ -129,7 +129,6 @@ class HomeFragment : Fragment() {
             if(result.resultCode== Activity.RESULT_OK){
                 searchView.show()
                 val activityResult = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-                println("Transition state: ${searchView.currentTransitionState}")
                 val textOutput = activityResult?.get(0).toString()
                 searchView.setText(textOutput)
                 searchView.editText.setSelection(textOutput.length)
@@ -142,12 +141,10 @@ class HomeFragment : Fragment() {
         searchBar.setOnMenuItemClickListener {
             when(it.itemId){
                 R.id.mic ->{
-                    println("ITEM CLICKED")
                     if(!SpeechRecognizer.isRecognitionAvailable(requireContext())){
                         Toast.makeText(requireContext(),"Speech Recognition not available", Toast.LENGTH_SHORT).show()
                     }
                     else{
-                        println("ON Permission: $recordAudioPermission")
                         if(MainActivity.recordAudioPermission){
                             val recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
                             recognizerIntent.putExtra(
@@ -205,7 +202,6 @@ class HomeFragment : Fragment() {
     private fun getContactList(query:String,list: List<Contact>):List<Contact>{
         val queriedList:MutableList<Contact> = mutableListOf()
         for(i in list){
-            println("1234 In Search Query")
             if((query.lowercase() in i.name.lowercase()) || (query.lowercase() in i.contactNumber.lowercase())){
                 queriedList.add(i.copy(isHighlighted = true))
             }

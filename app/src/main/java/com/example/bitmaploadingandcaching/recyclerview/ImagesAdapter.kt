@@ -30,6 +30,7 @@ import java.net.URL
 import java.net.UnknownHostException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.concurrent.Volatile
 
 class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAdapter.ImageHolder>(){
 
@@ -41,14 +42,15 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
     private var pendingRequests = ConcurrentHashMap<String,MutableList<HolderWithPosition>>()
     private var pauseDownload = ConcurrentHashMap<String, HolderWithPosition>()
     private val handler = Handler(Looper.getMainLooper())
-    private var networkLost = AtomicBoolean(true)
+    @Volatile
+    private var networkLost = true
 
     //    private var threadPoolExecutor = ThreadPoolExecutor(20,40,2,TimeUnit.SECONDS,LinkedBlockingQueue())
     private val connectivityManager = context.getSystemService(ConnectivityManager::class.java).apply {
         registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback(){
             override fun onAvailable(network: Network) {
                 super.onAvailable(network)
-                networkLost.set(false)
+                networkLost = false
                 downloadPendingRequests()
                 println("Network Available")
             }
@@ -60,7 +62,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
             override fun onLost(network: Network) {
                 super.onLost(network)
-                networkLost.set(true)
+                networkLost = true
                 println("Network Lost")
             }
 
@@ -100,7 +102,6 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
             holder.mobileNumber.visibility = View.VISIBLE
         }
         searchQuery = HomeFragment.queryReceived
-//        println("ON Bind View Holder Called")
         holder.callButton.setOnClickListener{
             Toast.makeText(context,"Can't Make a Call Please insert a SIM",Toast.LENGTH_SHORT).show()
         }
@@ -108,14 +109,12 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         holder.mobileNumber.text = contactList[holder.absoluteAdapterPosition].contactNumber
         updateSearchedView(holder)
         if(!contactList[holder.absoluteAdapterPosition].isUri){
-            println("1234 in download : ${contactList[position].name}")
             loadImage(holder,position,contactList[position].image)
         }
         else{
             holder.imageView.visibility = View.INVISIBLE
             val i = context.contentResolver.query(Uri.parse(contactList[position].image),null,null,null,null)
             if(i?.moveToNext()==true){
-                println("1234 IMAGE URI: $i")
                 if(holder.absoluteAdapterPosition == position){
                     holder.imageView.setImageURI(Uri.parse(contactList[position].image))
                     holder.imageView.visibility = View.VISIBLE
@@ -129,7 +128,6 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
     fun resetViews(newList:List<Contact>, query:String?){
-        println("On Reset View :${newList[0]}")
         val contactDiff = ContactsDiffUtil(contactList, newList)
         val diffResult = DiffUtil.calculateDiff(contactDiff)
         contactList.clear()
@@ -190,14 +188,13 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
     private fun loadImage(holder: ImageHolder, position: Int, imageUrl: String){
-//        println("IN ELSE Load Image Called $position")
+        println("On Load Image ${contactList[position].name} pos $position")
         if((bitmapCache.get(imageUrl)==null) && (ongoingDownloads[imageUrl]!=true)) {
             holder.imageView.visibility = View.INVISIBLE
             Thread {
                 var name = contactList[holder.absoluteAdapterPosition].name
-//                println("Thread Name: ${Thread.currentThread().id}  Task: ${holder.contactName.text}")
                 try {
-                    if (!networkLost.get()) {
+                    if (!networkLost) {
                         println("Download : $name ${Thread.currentThread().id} Started")
                         ongoingDownloads[imageUrl] = true
                         val url = URL(imageUrl).openConnection()
@@ -205,26 +202,29 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                         val inputStream = url.getInputStream()
                         val downloadedImage = BitmapFactory.decodeStream(inputStream)
                         inputStream.close()
-                        println("Download : $name ${Thread.currentThread().id} Finished")
+                        println("Download : $name ${Thread.currentThread().id} Finished ${holder.absoluteAdapterPosition}")
                         bitmapCache.put(imageUrl, downloadedImage)
-                        handler.post {
-                            var i = 0
-                            println("updateding at Position: ${holder.absoluteAdapterPosition} actual pos: $position")
-                            if (holder.absoluteAdapterPosition == position) {
-                                i += 1
-                                holder.imageView.setImageBitmap(downloadedImage)
-                                holder.imageView.visibility = View.VISIBLE
-                            }
-                            pendingRequests[imageUrl]?.forEach {
-                                i += 1
-//                                println("adapter position: ${it.holder.adapterPosition} item position: ${it.position}")
-                                if (it.holder.absoluteAdapterPosition == it.position) {
-                                    it.holder.imageView.setImageBitmap(downloadedImage)
-                                    it.holder.imageView.visibility = View.VISIBLE
+                        synchronized(holder){
+                            handler.post {
+                                var i = 0
+                                println("updating at Position: ${holder.absoluteAdapterPosition} $name actual pos: $position")
+//                                if (holder.absoluteAdapterPosition == position) {
+                                    i += 1
+                                    holder.imageView.setImageBitmap(downloadedImage)
+                                    holder.imageView.visibility = View.VISIBLE
+//                                }
+                                pendingRequests[imageUrl]?.forEach {
+                                    println("updating at Position pending request: ${holder.absoluteAdapterPosition} $name actual pos: $position")
+                                    i += 1
+//                                    if (it.holder.absoluteAdapterPosition == it.position) {
+                                        it.holder.imageView.setImageBitmap(downloadedImage)
+                                        it.holder.imageView.visibility = View.VISIBLE
+//                                    }
                                 }
+                                pendingRequests[imageUrl] = mutableListOf()
                             }
-                            pendingRequests[imageUrl] = mutableListOf()
                         }
+
                     } else {
                         pauseDownload[imageUrl] = HolderWithPosition(holder, position)
                         if (pendingRequests[imageUrl].isNullOrEmpty()) {
@@ -235,7 +235,6 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
                 } catch (e: UnknownHostException) {
                     println("In UnKnown Host Exception $name ${Thread.currentThread().id}")
-//                    Adding the Pause Download if any Network Interrupt Happens
                     pauseDownload[imageUrl] = HolderWithPosition(holder, position)
                     if (pendingRequests[imageUrl].isNullOrEmpty()) {
                         pendingRequests[imageUrl] = mutableListOf()
@@ -256,8 +255,6 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                 pendingRequests[imageUrl] = mutableListOf()
             }
             check(position,holder,imageUrl)
-
-//            pendingRequests[imageUrl]?.add(HolderWithPosition(holder,position))
             holder.imageView.visibility = View.INVISIBLE
         }
         else{
@@ -273,16 +270,13 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
         pauseDownload.forEach {
             Thread{
-//            threadPoolExecutor.execute {
                 try {
-//                println("Pause Download Started: ${contactList[it.value.position].name} ${Thread.currentThread().id}")
                     ongoingDownloads[it.key] = true
                     val url = URL(it.key).openConnection()
                     url.connect()
                     val inputStream = url.getInputStream()
                     val downloadedImage = BitmapFactory.decodeStream(inputStream)
                     inputStream.close()
-//                println("Pause Download Finished: ${contactList[it.value.position].name} ${Thread.currentThread().id}")
                     bitmapCache.put(it.key, downloadedImage)
                     handler.post {
                         var i = 0
@@ -294,15 +288,12 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                         var j = 0
                         pendingRequests[it.key]?.forEach { applyChange ->
                             i += 1
-//                        println("adapter position: ${applyChange.holder.adapterPosition} item position: ${applyChange.position}")
                             if (applyChange.holder.absoluteAdapterPosition == applyChange.position) {
                                 j += 1
                                 applyChange.holder.imageView.setImageBitmap(downloadedImage)
                                 applyChange.holder.imageView.visibility = View.VISIBLE
                             }
                         }
-
-//                    println("Total Updates for ${contactList[it.value.position]} is $i actual updates: $j")
                         pendingRequests[it.key] = mutableListOf()
                     }
                 } catch (e: Exception) {
