@@ -1,10 +1,6 @@
 package com.example.bitmaploadingandcaching.fragments
 
 import android.Manifest
-import android.animation.Animator
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
@@ -180,6 +176,7 @@ class HomeFragment : Fragment() {
 //        Search View Listener
         searchView.editText.addTextChangedListener{
             queryReceived = "${it?:""}"
+            println("Search Query Called ${it} $queryReceived")
             val list1 = getContactList((it?:"").toString(), contactList)
             adapter.resetViews(list1, queryReceived)
         }
@@ -203,7 +200,7 @@ class HomeFragment : Fragment() {
         val queriedList:MutableList<Contact> = mutableListOf()
         for(i in list){
             if((query.lowercase() in i.name.lowercase()) || (query.lowercase() in try {
-                    i.contactNumber[0].lowercase()
+                    i.contactNumber.lowercase()
             }catch (e:Exception){""})){
                 queriedList.add(i.copy(isHighlighted = true))
             }

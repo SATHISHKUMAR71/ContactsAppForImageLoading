@@ -22,6 +22,7 @@ import androidx.core.view.setPadding
 import androidx.core.view.size
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.dataclass.Contact
+import com.example.bitmaploadingandcaching.dataclass.LabelData
 import com.example.bitmaploadingandcaching.viewmodel.CacheData
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
@@ -35,6 +36,15 @@ import kotlin.random.Random
 class AddContactFragment : Fragment() {
 
     private lateinit var addPictureImg:ImageView
+    private var phoneLabelArray = arrayOf("")
+    private var phoneLabelLength = 0
+    private var emailLabelArray = arrayOf("")
+    private var emailLabelLength = 0
+    private var dateLabelArray = arrayOf("")
+    private var dateLabelLength = 0
+    private var phoneListWithLabel:MutableList<LabelData> = mutableListOf()
+    private var emailListWithLabel:MutableList<LabelData> = mutableListOf()
+    private var dateListWithLabel:MutableList<LabelData> = mutableListOf()
     private lateinit var addPictureText:MaterialButton
     private lateinit var firstName:TextInputEditText
     private lateinit var lastName:TextInputEditText
@@ -44,24 +54,24 @@ class AddContactFragment : Fragment() {
     private lateinit var emailContainer:LinearLayout
     private lateinit var phoneContainer:LinearLayout
     private lateinit var dateContainer:LinearLayout
-    private var significantDate:MutableList<String> = mutableListOf()
-    private var contactNumber:MutableList<String> = mutableListOf()
-    private var emailData:MutableList<String> = mutableListOf()
     private var oneTimeGeneratePhone = 0
     private var oneTimeGenerateEmail = 0
     private var oneTimeGenerateDate = 0
     private var dataImage:Uri = Uri.parse("")
-
-    companion object{
-        var phoneMapIndex = 0
-        var emailMapIndex = 0
-        var dateMapIndex = 0
-    }
+    private var phoneMapIndex = -1
+    private var emailMapIndex = -1
+    private var dateMapIndex = -1
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        phoneLabelArray =resources.getStringArray(R.array.phoneNumberLabel)
+        phoneLabelLength = phoneLabelArray.size
+        emailLabelArray = resources.getStringArray(R.array.emailLabel)
+        emailLabelLength = emailLabelArray.size
+        dateLabelArray = resources.getStringArray(R.array.dateLabel)
+        dateLabelLength = dateLabelArray.size
         val view =  inflater.inflate(R.layout.fragment_add_note, container, false)
         addPictureText = view.findViewById(R.id.addPictureButton)
         addPictureImg = view.findViewById(R.id.addPictureImage)
@@ -114,12 +124,26 @@ class AddContactFragment : Fragment() {
                             right = mid
                         }
                     }
-                    val contact = Contact(name,
-                        dataImage.toString(),
-                        HomeFragment.COLORS_LIST[Random.nextInt(0,10)],contactNumber,
-                        isHighlighted = false,isUri = true,significantDate)
-                    println("MAP DATA: $significantDate $contactNumber $emailData")
-                    CacheData.addList(contact,left)
+                    var j =0
+                    for(i in phoneListWithLabel){
+                        if(i.value.isNotEmpty() && i.label.isNotEmpty()){
+                            val contact = Contact(name,
+                                dataImage.toString(),
+                                HomeFragment.COLORS_LIST[Random.nextInt(0,10)],i.value,i.label,
+                                isHighlighted = false,isUri = true,dateListWithLabel)
+                            println("MAP DATA: $dateListWithLabel $emailListWithLabel $phoneListWithLabel")
+                            CacheData.addList(contact,left)
+                            j++
+                        }
+                    }
+                    if(j==0){
+                        val contact = Contact(name,
+                            dataImage.toString(),
+                            HomeFragment.COLORS_LIST[Random.nextInt(0,10)],"","Mobile",
+                            isHighlighted = false,isUri = true,dateListWithLabel)
+                        println("MAP DATA: $dateListWithLabel $emailListWithLabel")
+                        CacheData.addList(contact,left)
+                    }
                     parentFragmentManager.popBackStack()
                     Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
                 }
@@ -153,7 +177,9 @@ class AddContactFragment : Fragment() {
     }
 
     private fun addPhoneLayout() {
-        var index = phoneMapIndex++
+        val index = phoneMapIndex+1
+        phoneListWithLabel.add(index, LabelData("",""))
+        phoneMapIndex++
         var oneTime = 0
         var phone = ""
         val phoneView=LayoutInflater.from(requireContext()).inflate(R.layout.phone_layout,phoneContainer,false)
@@ -178,12 +204,13 @@ class AddContactFragment : Fragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 try {
-                    contactNumber[index] = s.toString()
+                    phoneListWithLabel[index].value = s.toString()
                 }
                 catch (e:Exception){
-                    contactNumber.add(index,s.toString())
+                    phoneListWithLabel.add(index, LabelData(s.toString(),""))
+
                 }
-                println("MAP DATA Phone: $contactNumber Size: $index")
+                println("MAP DATA Phone: Size: $index")
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -200,7 +227,27 @@ class AddContactFragment : Fragment() {
                 }
             }
         })
+        if(phoneLabelLength<=index){
+            val tmpLabel = phoneLabelArray[index%phoneLabelLength]
+            layoutPhoneLabel.setText(tmpLabel,false)
+            phoneListWithLabel[index].label = tmpLabel
+        }
+        else{
+            val tmpLabel = phoneLabelArray[index]
+            layoutPhoneLabel.setText(tmpLabel,false)
+            phoneListWithLabel[index].label = tmpLabel
+        }
+        layoutPhoneLabel.setOnItemClickListener { parent, view, position, id ->
+            var option = parent.getItemAtPosition(position).toString()
+            println("MAP DATA Index $index")
+            try{
+                phoneListWithLabel[index].label = option
+                println("DATA CHANGED: $phoneListWithLabel")
+            }
+            catch (e:Exception){
 
+            }
+        }
         layoutClearPhone.setOnClickListener{
             layoutPhoneLabel.text = null
             layoutPhoneLabel.clearFocus()
@@ -208,7 +255,8 @@ class AddContactFragment : Fragment() {
             layoutClearPhone.visibility =View.INVISIBLE
             if(phoneContainer.size>1){
                 removePhoneLayout(phoneView)
-                contactNumber.removeAt(index)
+                phoneListWithLabel.removeAt(index)
+                println("INDEX VALUE: $index ")
                 phoneMapIndex--
             }
             oneTimeGeneratePhone=0
@@ -224,7 +272,9 @@ class AddContactFragment : Fragment() {
 
     private fun addEmailLayout() {
         var email = ""
-        var index = emailMapIndex++
+        var index = emailMapIndex+1
+        emailListWithLabel.add(index,LabelData("",""))
+        emailMapIndex++
         var oneTime = 0
         val emailView=LayoutInflater.from(requireContext()).inflate(R.layout.email_layout,emailContainer,false)
         val layoutEmail = emailView.findViewById<TextInputEditText>(R.id.email)
@@ -236,18 +286,35 @@ class AddContactFragment : Fragment() {
         emailView.alpha = 0f
         emailView.scaleX = 0.9f
         emailView.scaleY = 0.9f
+
+        if(emailLabelLength<=index){
+            val tmpLabel = emailLabelArray[index%emailLabelLength]
+            layoutEmailLabel.setText(tmpLabel,false)
+            emailListWithLabel[index].label = tmpLabel
+        }
+        else{
+            val tmpLabel = emailLabelArray[index]
+            layoutEmailLabel.setText(tmpLabel,false)
+            emailListWithLabel[index].label = tmpLabel
+        }
+        layoutEmailLabel.setOnItemClickListener { parent, view, position, id ->
+            var option = parent.getItemAtPosition(position).toString()
+            println("MAP DATA Index $index")
+            try{
+                emailListWithLabel[index].label = option
+                println("DATA CHANGED: $emailListWithLabel")
+            }
+            catch (e:Exception){
+
+            }
+        }
         layoutEmail.addTextChangedListener(object : TextWatcher{
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
 
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                try{
-                    emailData[index] = s.toString()
-                }
-                catch (e:Exception){
-                    emailData.add(index,s.toString())
-                }
+                    emailListWithLabel[index].value = s.toString()
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -271,7 +338,7 @@ class AddContactFragment : Fragment() {
             layoutClearEmail.visibility =View.INVISIBLE
             if(emailContainer.size>1){
                 removeEmailLayout(emailView)
-                emailData.removeAt(index)
+                emailListWithLabel.removeAt(index)
                 emailMapIndex--
             }
             oneTimeGenerateEmail=0
@@ -286,7 +353,8 @@ class AddContactFragment : Fragment() {
     }
 
     private fun addDateLayout() {
-        val index = dateMapIndex++
+        val index = dateMapIndex+1
+        dateMapIndex++
         var tmpDate = ""
         val dateView=LayoutInflater.from(requireContext()).inflate(R.layout.date_layout,dateContainer,false)
         val layoutBirthday = dateView.findViewById<TextInputEditText>(R.id.birthdayDate)
@@ -298,6 +366,7 @@ class AddContactFragment : Fragment() {
         layoutBirthday.id = View.generateViewId()
         layoutClearDate.id = View.generateViewId()
         layoutDateLabel.id = View.generateViewId()
+        dateListWithLabel.add(index,LabelData("",""))
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Select the Birthday Date")
             .setTextInputFormat(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()))
@@ -306,18 +375,34 @@ class AddContactFragment : Fragment() {
         layoutBirthday.setOnClickListener {
             datePicker.show(parentFragmentManager,"Date Picker")
         }
+        if(dateLabelLength<=index){
+            val tmpLabel = dateLabelArray[index%dateLabelLength]
+            layoutDateLabel.setText(tmpLabel,false)
+            dateListWithLabel[index].label = tmpLabel
+        }
+        else{
+            val tmpLabel = dateLabelArray[index]
+            layoutDateLabel.setText(tmpLabel,false)
+            dateListWithLabel[index].label = tmpLabel
+        }
+        layoutDateLabel.setOnItemClickListener { parent, view, position, id ->
+            var option = parent.getItemAtPosition(position).toString()
+            println("MAP DATA Index $index")
+            try{
+                dateListWithLabel[index].label = option
+                println("DATA CHANGED: $dateListWithLabel")
+            }
+            catch (e:Exception){
+
+            }
+        }
         datePicker.addOnPositiveButtonClickListener {
             val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             val formattedDate = date.format(it)
             layoutClearDate.visibility = View.VISIBLE
             layoutBirthday.setText(formattedDate)
             tmpDate = formattedDate
-            try{
-                significantDate[index] = formattedDate
-            }
-            catch (e:Exception){
-                significantDate.add(index,formattedDate)
-            }
+            dateListWithLabel[index].value = formattedDate
             addDateLayout()
         }
         layoutClearDate.setOnClickListener{
@@ -327,7 +412,7 @@ class AddContactFragment : Fragment() {
             layoutClearDate.visibility =View.INVISIBLE
             if(dateContainer.size>1){
                 removeDateLayout(dateView)
-                significantDate.removeAt(index)
+                dateListWithLabel.removeAt(index)
                 dateMapIndex--
             }
             oneTimeGenerateDate = 0

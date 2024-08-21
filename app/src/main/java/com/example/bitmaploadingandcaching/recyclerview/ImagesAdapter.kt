@@ -86,6 +86,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         val profileName:TextView = itemView.findViewById(R.id.textName)
         val callButton:ImageButton = itemView.findViewById(R.id.callButton)
         val mobileNumber:TextView = itemView.findViewById(R.id.mobileNumber)
+        val mobileType:TextView = itemView.findViewById(R.id.mobileType)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageHolder {
@@ -97,19 +98,29 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
     }
 
     override fun onBindViewHolder(holder: ImageHolder, position: Int) {
+        println("&&& on Bind View Holder $searchQuery ${HomeFragment.queryReceived}")
         holder.contactName.text = contactList[holder.absoluteAdapterPosition].name
         holder.profileName.text = contactList[holder.absoluteAdapterPosition].name[0].toString().uppercase()
-        searchQuery = HomeFragment.queryReceived
 //        println("ON Bind View Holder Called")
         holder.callButton.setOnClickListener{
             Toast.makeText(context,"Can't Make a Call Please insert a SIM",Toast.LENGTH_SHORT).show()
         }
         holder.profileName.background.setTint(contactList[holder.absoluteAdapterPosition].contactColor)
-        holder.mobileNumber.text = try{
-            contactList[holder.absoluteAdapterPosition].contactNumber[0]
-        }catch (e:Exception){
-            ""
+        holder.mobileNumber.text = contactList[holder.absoluteAdapterPosition].contactNumber
+        if(contactList[holder.absoluteAdapterPosition].contactNumber.isEmpty()){
+            println("ON If")
+            holder.mobileType.visibility = View.GONE
+            holder.mobileNumber.visibility = View.GONE
         }
+        else{
+            println("ON else")
+            holder.mobileType.text = contactList[holder.absoluteAdapterPosition].contactType
+            holder.mobileNumber.text = contactList[holder.absoluteAdapterPosition].contactNumber
+            holder.mobileType.visibility = View.VISIBLE
+            holder.mobileNumber.visibility = View.VISIBLE
+        }
+        searchQuery = HomeFragment.queryReceived
+        println("**** $searchQuery ${HomeFragment.queryReceived}")
         updateSearchedView(holder)
         if(!contactList[holder.absoluteAdapterPosition].isUri){
 //            println("1234 in download : ${contactList[position].name}")
@@ -133,7 +144,11 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
     fun resetViews(newList:List<Contact>, query:String?){
+<<<<<<< HEAD
 //        println("On Reset View")
+=======
+        println("^^^^ On Reset View $query")
+>>>>>>> change-dataclass
         val contactDiff = ContactsDiffUtil(contactList, newList)
         val diffResult = DiffUtil.calculateDiff(contactDiff)
         contactList.clear()
@@ -151,6 +166,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
     private fun updateSearchedView(holder: ImageHolder) {
+        println("ON Update Search ${searchQuery}")
         val position = holder.absoluteAdapterPosition
         val length = searchQuery.length
         if(contactList[position].isHighlighted && searchQuery.isNotEmpty()){
@@ -171,17 +187,11 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
             }
 
 //            For Mobile Number
-            var startIndexMobile = try{
-                contactList[position].contactNumber[0].indexOf(searchQuery, ignoreCase = true)
-            } catch (e:Exception){
-                -1
-            }
-            val highlightedMobile = try {
-                SpannableString(contactList[position].contactNumber[0])
-            }catch (e:Exception){
-                SpannableString("")
-            }
+            var startIndexMobile = contactList[position].contactNumber.indexOf(searchQuery, ignoreCase = true)
+            val highlightedMobile = SpannableString(contactList[position].contactNumber)
+            println("$searchQuery ${contactList[position].contactNumber} $startIndexMobile")
             while (startIndexMobile>=0){
+                println("$searchQuery ${contactList[position].contactNumber} $startIndexMobile")
                 val endIndex = startIndexMobile+length
                 if(endIndex>startIndexMobile){
                     highlightedMobile.setSpan(
@@ -191,9 +201,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE
                     )
                 }
-                startIndexMobile = try{
-                    contactList[position].contactNumber[0].indexOf(searchQuery,endIndex, ignoreCase = true)
-                }catch (e:Exception){-1}
+                startIndexMobile = contactList[position].contactNumber.indexOf(searchQuery,endIndex, ignoreCase = true)
             }
             holder.contactName.text = highlightedName
             holder.mobileNumber.text = highlightedMobile
