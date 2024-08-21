@@ -112,14 +112,14 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         }
         updateSearchedView(holder)
         if(!contactList[holder.absoluteAdapterPosition].isUri){
-            println("1234 in download : ${contactList[position].name}")
+//            println("1234 in download : ${contactList[position].name}")
             loadImage(holder,position,contactList[position].image)
         }
         else{
             holder.imageView.visibility = View.INVISIBLE
             val i = context.contentResolver.query(Uri.parse(contactList[position].image),null,null,null,null)
             if(i?.moveToNext()==true){
-                println("1234 IMAGE URI: $i")
+//                println("1234 IMAGE URI: $i")
                 if(holder.absoluteAdapterPosition == position){
                     holder.imageView.setImageURI(Uri.parse(contactList[position].image))
                     holder.imageView.visibility = View.VISIBLE
@@ -133,7 +133,7 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
     fun resetViews(newList:List<Contact>, query:String?){
-        println("On Reset View")
+//        println("On Reset View")
         val contactDiff = ContactsDiffUtil(contactList, newList)
         val diffResult = DiffUtil.calculateDiff(contactDiff)
         contactList.clear()
@@ -205,12 +205,12 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
     private fun loadImage(holder: ImageHolder, position: Int, imageUrl: String){
             currentHolder = holder
             counter++
-            println("RUNNING holder ${holder.absoluteAdapterPosition} ${position}")
+//            println("RUNNING holder ${holder.absoluteAdapterPosition} ${position}")
             if ((bitmapCache.get(imageUrl) == null) && (ongoingDownloads[imageUrl] != true)) {
                 holder.imageView.visibility = View.INVISIBLE
                 Thread {
                     var name = contactList[holder.absoluteAdapterPosition].name
-                    println("RUNNING holder in thread ${holder.absoluteAdapterPosition} ${position}")
+//                    println("RUNNING holder in thread ${holder.absoluteAdapterPosition} ${position}")
                     try {
                         if (!networkLost) {
                             println("Download : $name ${Thread.currentThread().id} Started")
@@ -220,22 +220,22 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                             val inputStream = url.getInputStream()
                             val downloadedImage = BitmapFactory.decodeStream(inputStream)
                             inputStream.close()
-                            println("RUNNING holder Download : $name ${Thread.currentThread().id} Finished")
+                            println("holder Download : $name ${Thread.currentThread().id} Finished")
                             bitmapCache.put(imageUrl, downloadedImage)
                             synchronized(lock2){
-                                println("RUNNING holder in handler ${holder.absoluteAdapterPosition} ${position} count : $counter")
+//                                println("RUNNING holder in handler ${holder.absoluteAdapterPosition} ${position} count : $counter")
                                 handler.post {
-                                    println("******* Holder: on handler ${currentHolder.absoluteAdapterPosition} actual position: ${currentPosition}")
-                                println("RUNNING ")
+//                                    println("******* Holder: on handler ${currentHolder.absoluteAdapterPosition} actual position: ${currentPosition}")
+//                                println("RUNNING ")
                                 var i = 0
-                                println("updating at Position: ${holder.absoluteAdapterPosition} actual pos: $position")
+//                                println("updating at Position: ${holder.absoluteAdapterPosition} actual pos: $position")
                                 if (holder.absoluteAdapterPosition == position) {
                                     i += 1
                                     holder.imageView.setImageBitmap(downloadedImage)
                                     holder.imageView.visibility = View.VISIBLE
                                 }
                                 else if (currentHolder.absoluteAdapterPosition == currentPosition) {
-                                    println("******* Holder: on else if ${currentHolder.absoluteAdapterPosition} actual position: $currentPosition")
+//                                    println("******* Holder: on else if ${currentHolder.absoluteAdapterPosition} actual position: $currentPosition")
                                     i += 1
                                     currentHolder.imageView.setImageBitmap(downloadedImage)
                                     currentHolder.imageView.visibility = View.INVISIBLE
@@ -278,8 +278,8 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
             } else if ((bitmapCache.get(imageUrl) == null) && (ongoingDownloads[imageUrl] == true)) {
                 currentPosition = position
                 currentHolder = holder
-                println("******* Holder: ${currentHolder.absoluteAdapterPosition} actual position: ${currentPosition}")
-                println("RUNNING holder in thread else if ${holder.absoluteAdapterPosition} ${position}")
+//                println("******* Holder: ${currentHolder.absoluteAdapterPosition} actual position: ${currentPosition}")
+//                println("RUNNING holder in thread else if ${holder.absoluteAdapterPosition} ${position}")
                 if (pendingRequests[imageUrl].isNullOrEmpty()) {
                     pendingRequests[imageUrl] = mutableListOf()
                 }
@@ -288,8 +288,8 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
             } else {
                 currentPosition = position
                 currentHolder = holder
-                println("******* Holder: ${currentHolder.absoluteAdapterPosition} actual position: ${currentPosition}")
-                println("RUNNING holder in thread else ${holder.absoluteAdapterPosition} ${position}")
+//                println("******* Holder: ${currentHolder.absoluteAdapterPosition} actual position: ${currentPosition}")
+//                println("RUNNING holder in thread else ${holder.absoluteAdapterPosition} ${position}")
                 holder.imageView.setImageBitmap(bitmapCache.get(imageUrl))
                 if (holder.imageView.visibility != View.VISIBLE) {
                     holder.imageView.visibility = View.VISIBLE
