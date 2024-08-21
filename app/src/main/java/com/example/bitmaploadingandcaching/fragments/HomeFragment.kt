@@ -1,10 +1,6 @@
 package com.example.bitmaploadingandcaching.fragments
 
 import android.Manifest
-import android.animation.Animator
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
