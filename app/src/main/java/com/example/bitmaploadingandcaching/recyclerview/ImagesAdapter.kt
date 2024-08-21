@@ -105,7 +105,11 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
             Toast.makeText(context,"Can't Make a Call Please insert a SIM",Toast.LENGTH_SHORT).show()
         }
         holder.profileName.background.setTint(contactList[holder.absoluteAdapterPosition].contactColor)
-        holder.mobileNumber.text = contactList[holder.absoluteAdapterPosition].contactNumber
+        holder.mobileNumber.text = try{
+            contactList[holder.absoluteAdapterPosition].contactNumber[0]
+        }catch (e:Exception){
+            ""
+        }
         updateSearchedView(holder)
         if(!contactList[holder.absoluteAdapterPosition].isUri){
             println("1234 in download : ${contactList[position].name}")
@@ -167,8 +171,16 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
             }
 
 //            For Mobile Number
-            var startIndexMobile = contactList[position].contactNumber.indexOf(searchQuery, ignoreCase = true)
-            val highlightedMobile = SpannableString(contactList[position].contactNumber)
+            var startIndexMobile = try{
+                contactList[position].contactNumber[0].indexOf(searchQuery, ignoreCase = true)
+            } catch (e:Exception){
+                -1
+            }
+            val highlightedMobile = try {
+                SpannableString(contactList[position].contactNumber[0])
+            }catch (e:Exception){
+                SpannableString("")
+            }
             while (startIndexMobile>=0){
                 val endIndex = startIndexMobile+length
                 if(endIndex>startIndexMobile){
@@ -179,7 +191,9 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                         Spannable.SPAN_INCLUSIVE_INCLUSIVE
                     )
                 }
-                startIndexMobile = contactList[position].contactNumber.indexOf(searchQuery,endIndex, ignoreCase = true)
+                startIndexMobile = try{
+                    contactList[position].contactNumber[0].indexOf(searchQuery,endIndex, ignoreCase = true)
+                }catch (e:Exception){-1}
             }
             holder.contactName.text = highlightedName
             holder.mobileNumber.text = highlightedMobile

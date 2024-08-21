@@ -44,13 +44,19 @@ class AddContactFragment : Fragment() {
     private lateinit var emailContainer:LinearLayout
     private lateinit var phoneContainer:LinearLayout
     private lateinit var dateContainer:LinearLayout
-    private var significantDate:MutableMap<String,String> = mutableMapOf()
-    private var contactNumber:MutableMap<String,String> = mutableMapOf()
+    private var significantDate:MutableList<String> = mutableListOf()
+    private var contactNumber:MutableList<String> = mutableListOf()
+    private var emailData:MutableList<String> = mutableListOf()
     private var oneTimeGeneratePhone = 0
     private var oneTimeGenerateEmail = 0
     private var oneTimeGenerateDate = 0
     private var dataImage:Uri = Uri.parse("")
 
+    companion object{
+        var phoneMapIndex = 0
+        var emailMapIndex = 0
+        var dateMapIndex = 0
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -108,10 +114,12 @@ class AddContactFragment : Fragment() {
                             right = mid
                         }
                     }
-
-                        CacheData.addList(Contact(name,
-                            dataImage.toString(),
-                            HomeFragment.COLORS_LIST[Random.nextInt(0,10)],contactNumber["2"]?:"", isHighlighted = false,isUri = true,significantDate["1"]?:""),left)
+                    val contact = Contact(name,
+                        dataImage.toString(),
+                        HomeFragment.COLORS_LIST[Random.nextInt(0,10)],contactNumber,
+                        isHighlighted = false,isUri = true,significantDate)
+                    println("MAP DATA: $significantDate $contactNumber $emailData")
+                    CacheData.addList(contact,left)
                     parentFragmentManager.popBackStack()
                     Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
                 }
@@ -145,6 +153,7 @@ class AddContactFragment : Fragment() {
     }
 
     private fun addPhoneLayout() {
+        var index = phoneMapIndex++
         var oneTime = 0
         var phone = ""
         val phoneView=LayoutInflater.from(requireContext()).inflate(R.layout.phone_layout,phoneContainer,false)
@@ -158,9 +167,8 @@ class AddContactFragment : Fragment() {
         layoutClearPhone.id = View.generateViewId()
         layoutPhoneLabel.id = View.generateViewId()
         layoutPhoneNumber.setOnFocusChangeListener { v, hasFocus ->
+            if(!hasFocus){
 
-            if(!hasFocus && v.isVisible){
-                contactNumber[phoneContainer.size.toString()] = phone
             }
         }
         layoutPhoneNumber.addTextChangedListener(object : TextWatcher{
@@ -169,7 +177,13 @@ class AddContactFragment : Fragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
+                try {
+                    contactNumber[index] = s.toString()
+                }
+                catch (e:Exception){
+                    contactNumber.add(index,s.toString())
+                }
+                println("MAP DATA Phone: $contactNumber Size: $index")
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -194,6 +208,8 @@ class AddContactFragment : Fragment() {
             layoutClearPhone.visibility =View.INVISIBLE
             if(phoneContainer.size>1){
                 removePhoneLayout(phoneView)
+                contactNumber.removeAt(index)
+                phoneMapIndex--
             }
             oneTimeGeneratePhone=0
         }
@@ -208,6 +224,7 @@ class AddContactFragment : Fragment() {
 
     private fun addEmailLayout() {
         var email = ""
+        var index = emailMapIndex++
         var oneTime = 0
         val emailView=LayoutInflater.from(requireContext()).inflate(R.layout.email_layout,emailContainer,false)
         val layoutEmail = emailView.findViewById<TextInputEditText>(R.id.email)
@@ -225,7 +242,12 @@ class AddContactFragment : Fragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
+                try{
+                    emailData[index] = s.toString()
+                }
+                catch (e:Exception){
+                    emailData.add(index,s.toString())
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -249,6 +271,8 @@ class AddContactFragment : Fragment() {
             layoutClearEmail.visibility =View.INVISIBLE
             if(emailContainer.size>1){
                 removeEmailLayout(emailView)
+                emailData.removeAt(index)
+                emailMapIndex--
             }
             oneTimeGenerateEmail=0
         }
@@ -262,6 +286,7 @@ class AddContactFragment : Fragment() {
     }
 
     private fun addDateLayout() {
+        val index = dateMapIndex++
         var tmpDate = ""
         val dateView=LayoutInflater.from(requireContext()).inflate(R.layout.date_layout,dateContainer,false)
         val layoutBirthday = dateView.findViewById<TextInputEditText>(R.id.birthdayDate)
@@ -287,7 +312,12 @@ class AddContactFragment : Fragment() {
             layoutClearDate.visibility = View.VISIBLE
             layoutBirthday.setText(formattedDate)
             tmpDate = formattedDate
-            significantDate[dateContainer.size.toString()] = tmpDate
+            try{
+                significantDate[index] = formattedDate
+            }
+            catch (e:Exception){
+                significantDate.add(index,formattedDate)
+            }
             addDateLayout()
         }
         layoutClearDate.setOnClickListener{
@@ -297,6 +327,8 @@ class AddContactFragment : Fragment() {
             layoutClearDate.visibility =View.INVISIBLE
             if(dateContainer.size>1){
                 removeDateLayout(dateView)
+                significantDate.removeAt(index)
+                dateMapIndex--
             }
             oneTimeGenerateDate = 0
         }

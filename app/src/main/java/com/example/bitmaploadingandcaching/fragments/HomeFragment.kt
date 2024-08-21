@@ -202,7 +202,9 @@ class HomeFragment : Fragment() {
     private fun getContactList(query:String,list: List<Contact>):List<Contact>{
         val queriedList:MutableList<Contact> = mutableListOf()
         for(i in list){
-            if((query.lowercase() in i.name.lowercase()) || (query.lowercase() in i.contactNumber.lowercase())){
+            if((query.lowercase() in i.name.lowercase()) || (query.lowercase() in try {
+                    i.contactNumber[0].lowercase()
+            }catch (e:Exception){""})){
                 queriedList.add(i.copy(isHighlighted = true))
             }
         }
