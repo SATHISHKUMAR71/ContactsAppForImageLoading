@@ -144,11 +144,10 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
     fun resetViews(newList:List<Contact>, query:String?){
-<<<<<<< HEAD
-//        println("On Reset View")
-=======
+
+//        println("On Reset View"
+
         println("^^^^ On Reset View $query")
->>>>>>> change-dataclass
         val contactDiff = ContactsDiffUtil(contactList, newList)
         val diffResult = DiffUtil.calculateDiff(contactDiff)
         contactList.clear()
