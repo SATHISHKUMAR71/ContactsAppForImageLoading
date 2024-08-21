@@ -137,7 +137,6 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         diffResult.dispatchUpdatesTo(this)
         if(query!=null){
             if(query.isNotEmpty()){
-//                updateUI.value = true
                 notifyItemRangeChanged(0,newList.size)
             }
             else{
@@ -190,7 +189,6 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
 
 
     private fun loadImage(holder: ImageHolder, position: Int, imageUrl: String){
-        synchronized(lock1) {
             currentHolder = holder
             counter++
             println("RUNNING holder ${holder.absoluteAdapterPosition} ${position}")
@@ -272,8 +270,6 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                     pendingRequests[imageUrl] = mutableListOf()
                 }
                 check(position, holder, imageUrl)
-
-//            pendingRequests[imageUrl]?.add(HolderWithPosition(holder,position))
                 holder.imageView.visibility = View.INVISIBLE
             } else {
                 currentPosition = position
@@ -285,7 +281,6 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
                     holder.imageView.visibility = View.VISIBLE
                 }
             }
-        }
     }
 
 
