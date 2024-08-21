@@ -566,7 +566,7 @@ class CacheData:ViewModel() {
                     false,false,""
                 )
             )
-            list.sortBy { it.name }
+            list.sortBy { it.name.uppercase() }
             return list
         }
     }
