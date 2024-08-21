@@ -176,7 +176,6 @@ class HomeFragment : Fragment() {
 //        Search View Listener
         searchView.editText.addTextChangedListener{
             queryReceived = "${it?:""}"
-            println("Search Query Called ${it} $queryReceived")
             val list1 = getContactList((it?:"").toString(), contactList)
             adapter.resetViews(list1, queryReceived)
         }

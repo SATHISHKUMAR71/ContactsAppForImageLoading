@@ -130,7 +130,6 @@ class AddContactFragment : Fragment() {
                                 dataImage.toString(),
                                 HomeFragment.COLORS_LIST[Random.nextInt(0,10)],i.value.value,i.value.label,
                                 isHighlighted = false,isUri = true,dateListWithLabel)
-                            println("MAP DATA: $dateListWithLabel $emailListWithLabel $phoneListWithLabel")
                             CacheData.addList(contact,left)
                             j++
                         }
@@ -140,9 +139,9 @@ class AddContactFragment : Fragment() {
                             dataImage.toString(),
                             HomeFragment.COLORS_LIST[Random.nextInt(0,10)],"","Mobile",
                             isHighlighted = false,isUri = true,dateListWithLabel)
-                        println("MAP DATA: $dateListWithLabel $emailListWithLabel")
                         CacheData.addList(contact,left)
                     }
+                    println("MAP DATA: $dateListWithLabel $emailListWithLabel $phoneListWithLabel")
                     parentFragmentManager.popBackStack()
                     Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
                 }
@@ -201,7 +200,6 @@ class AddContactFragment : Fragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                println("MAP DATA Phone: Size: $index")
                 phoneListWithLabel[index]?.value = s.toString()
             }
 
@@ -230,9 +228,7 @@ class AddContactFragment : Fragment() {
         }
         layoutPhoneLabel.setOnItemClickListener { parent, view, position, id ->
             var option = parent.getItemAtPosition(position).toString()
-            println("MAP DATA Index $index")
             phoneListWithLabel[index]?.label = option
-            println("DATA CHANGED: $phoneListWithLabel")
         }
         layoutClearPhone.setOnClickListener{
             layoutPhoneLabel.text = null
@@ -242,7 +238,6 @@ class AddContactFragment : Fragment() {
             if(phoneContainer.size>1){
                 removePhoneLayout(phoneView)
                 phoneListWithLabel.remove(index)
-                println("INDEX VALUE: $index ")
                 phoneMapIndex--
             }
             oneTimeGeneratePhone=0
@@ -283,10 +278,8 @@ class AddContactFragment : Fragment() {
             emailListWithLabel[index]?.label = tmpLabel
         }
         layoutEmailLabel.setOnItemClickListener { parent, view, position, id ->
-            var option = parent.getItemAtPosition(position).toString()
-            println("MAP DATA Index $index")
+            val option = parent.getItemAtPosition(position).toString()
             emailListWithLabel[index]?.label = option
-            println("DATA CHANGED: $emailListWithLabel")
         }
         layoutEmail.addTextChangedListener(object : TextWatcher{
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -294,7 +287,6 @@ class AddContactFragment : Fragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    println("MAP DATA Phone: Size: $index")
                     emailListWithLabel[index]?.value = s.toString()
             }
 
@@ -366,10 +358,8 @@ class AddContactFragment : Fragment() {
             dateListWithLabel[index]?.label = tmpLabel
         }
         layoutDateLabel.setOnItemClickListener { parent, view, position, id ->
-            var option = parent.getItemAtPosition(position).toString()
-            println("MAP DATA Index $index")
+            val option = parent.getItemAtPosition(position).toString()
             dateListWithLabel[index]?.label = option
-            println("DATA CHANGED: $dateListWithLabel")
         }
         datePicker.addOnPositiveButtonClickListener {
             val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
