@@ -22,6 +22,7 @@ import androidx.core.view.setPadding
 import androidx.core.view.size
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.dataclass.Contact
+import com.example.bitmaploadingandcaching.dataclass.PhoneLabelData
 import com.example.bitmaploadingandcaching.viewmodel.CacheData
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
@@ -35,6 +36,9 @@ import kotlin.random.Random
 class AddContactFragment : Fragment() {
 
     private lateinit var addPictureImg:ImageView
+    var tmpLabelArray = arrayOf("s")
+    var length = 0
+    private var phoneListWithLabel:MutableList<PhoneLabelData> = mutableListOf()
     private lateinit var addPictureText:MaterialButton
     private lateinit var firstName:TextInputEditText
     private lateinit var lastName:TextInputEditText
@@ -47,21 +51,22 @@ class AddContactFragment : Fragment() {
     private var significantDate:MutableList<String> = mutableListOf()
     private var contactNumber:MutableList<String> = mutableListOf()
     private var emailData:MutableList<String> = mutableListOf()
+    private var labelPhoneList:MutableList<String> = mutableListOf()
     private var oneTimeGeneratePhone = 0
     private var oneTimeGenerateEmail = 0
     private var oneTimeGenerateDate = 0
     private var dataImage:Uri = Uri.parse("")
-
-    companion object{
-        var phoneMapIndex = 0
-        var emailMapIndex = 0
-        var dateMapIndex = 0
-    }
+    private var phoneMapIndex = -1
+    private var phoneLabelIndex = 0
+    private var emailMapIndex = 0
+    private var dateMapIndex = 0
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        tmpLabelArray =resources.getStringArray(R.array.phoneNumberLabel)
+        length = tmpLabelArray.size
         val view =  inflater.inflate(R.layout.fragment_add_note, container, false)
         addPictureText = view.findViewById(R.id.addPictureButton)
         addPictureImg = view.findViewById(R.id.addPictureImage)
@@ -114,12 +119,26 @@ class AddContactFragment : Fragment() {
                             right = mid
                         }
                     }
-                    val contact = Contact(name,
-                        dataImage.toString(),
-                        HomeFragment.COLORS_LIST[Random.nextInt(0,10)],contactNumber,
-                        isHighlighted = false,isUri = true,significantDate)
-                    println("MAP DATA: $significantDate $contactNumber $emailData")
-                    CacheData.addList(contact,left)
+                    var j =0
+                    for(i in phoneListWithLabel){
+                        if(i.number.isNotEmpty() && i.label.isNotEmpty()){
+                            val contact = Contact(name,
+                                dataImage.toString(),
+                                HomeFragment.COLORS_LIST[Random.nextInt(0,10)],i.number,i.label,
+                                isHighlighted = false,isUri = true,significantDate)
+                            println("MAP DATA: $significantDate $contactNumber $emailData $phoneListWithLabel")
+                            CacheData.addList(contact,left)
+                            j++
+                        }
+                    }
+                    if(j==0){
+                        val contact = Contact(name,
+                            dataImage.toString(),
+                            HomeFragment.COLORS_LIST[Random.nextInt(0,10)],"","Mobile",
+                            isHighlighted = false,isUri = true,significantDate)
+                        println("MAP DATA: $significantDate $contactNumber $emailData $labelPhoneList")
+                        CacheData.addList(contact,left)
+                    }
                     parentFragmentManager.popBackStack()
                     Toast.makeText(requireContext(),"Contact Saved Successfully",Toast.LENGTH_SHORT).show()
                 }
@@ -153,7 +172,10 @@ class AddContactFragment : Fragment() {
     }
 
     private fun addPhoneLayout() {
-        var index = phoneMapIndex++
+        val index = phoneMapIndex+1
+        phoneListWithLabel.add(index, PhoneLabelData("",""))
+        phoneMapIndex++
+        var labelIndex = phoneLabelIndex++
         var oneTime = 0
         var phone = ""
         val phoneView=LayoutInflater.from(requireContext()).inflate(R.layout.phone_layout,phoneContainer,false)
@@ -178,9 +200,10 @@ class AddContactFragment : Fragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 try {
-                    contactNumber[index] = s.toString()
+                    phoneListWithLabel[index].number = s.toString()
                 }
                 catch (e:Exception){
+                    phoneListWithLabel.add(index, PhoneLabelData(s.toString(),""))
                     contactNumber.add(index,s.toString())
                 }
                 println("MAP DATA Phone: $contactNumber Size: $index")
@@ -200,7 +223,26 @@ class AddContactFragment : Fragment() {
                 }
             }
         })
-
+        if(length<=index){
+            val tmpLabel = tmpLabelArray[index%length].toString()
+            layoutPhoneLabel.setText(tmpLabel,false)
+            phoneListWithLabel[index].label = tmpLabel
+        }
+        else{
+            val tmpLabel = tmpLabelArray[index].toString()
+            layoutPhoneLabel.setText(tmpLabel,false)
+            phoneListWithLabel[index].label = tmpLabel
+        }
+        layoutPhoneLabel.setOnItemClickListener { parent, view, position, id ->
+            var option = parent.getItemAtPosition(position).toString()
+            println("MAP DATA Index $index")
+            try{
+                phoneListWithLabel[index].label = option
+            }
+            catch (e:Exception){
+                labelPhoneList.add(index,option)
+            }
+        }
         layoutClearPhone.setOnClickListener{
             layoutPhoneLabel.text = null
             layoutPhoneLabel.clearFocus()
@@ -208,7 +250,15 @@ class AddContactFragment : Fragment() {
             layoutClearPhone.visibility =View.INVISIBLE
             if(phoneContainer.size>1){
                 removePhoneLayout(phoneView)
+                phoneListWithLabel.removeAt(index)
+                println("INDEX VALUE: $index ${labelPhoneList}")
                 contactNumber.removeAt(index)
+                try {
+                    labelPhoneList.removeAt(index)
+                }
+                catch (e:Exception){
+                    println("No Label Found")
+                }
                 phoneMapIndex--
             }
             oneTimeGeneratePhone=0
