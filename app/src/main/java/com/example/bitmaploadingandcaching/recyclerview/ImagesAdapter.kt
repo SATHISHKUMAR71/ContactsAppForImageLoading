@@ -1,6 +1,7 @@
 package com.example.bitmaploadingandcaching.recyclerview
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.ConnectivityManager
@@ -24,12 +25,14 @@ import com.example.bitmaploadingandcaching.dataclass.Contact
 import com.example.bitmaploadingandcaching.dataclass.HolderWithPosition
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.fragments.HomeFragment
+import com.example.bitmaploadingandcaching.storage.DiskCache
 import com.example.bitmaploadingandcaching.viewmodel.CacheData
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.UnknownHostException
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.Volatile
+import kotlin.io.encoding.Base64
 
 class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAdapter.ImageHolder>(){
 
@@ -113,13 +116,21 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         }
         searchQuery = HomeFragment.queryReceived
         updateSearchedView(holder)
-        if(!contactList[holder.absoluteAdapterPosition].isUri){
+        if(contactList[holder.absoluteAdapterPosition].isBitmap){
+            println("ON ELSE IF ${contactList[position].image}")
+            val bitmap = DiskCache.loadBitMap(context,contactList[position].image)
+            holder.imageView.setImageBitmap(bitmap)
+            println(bitmap)
+            holder.imageView.visibility = View.VISIBLE
+        }
+        else if(!contactList[holder.absoluteAdapterPosition].isUri){
             loadImage(holder,position,contactList[position].image)
         }
         else{
             holder.imageView.visibility = View.INVISIBLE
             val i = context.contentResolver.query(Uri.parse(contactList[position].image),null,null,null,null)
             if(i?.moveToNext()==true){
+                println("ON IF")
                 if(holder.absoluteAdapterPosition == position){
                     holder.imageView.setImageURI(Uri.parse(contactList[position].image))
                     holder.imageView.visibility = View.VISIBLE

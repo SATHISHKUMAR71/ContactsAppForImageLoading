@@ -42,7 +42,8 @@ class MainActivity : AppCompatActivity() {
 
     companion object{
         private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
-        private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO)
+        private const val REQUEST_CAMERA_PERMISSION = 200
+        private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO,Manifest.permission.CAMERA)
         var recordAudioPermission = false
         private var permissionToRecordAccepted = false
     }

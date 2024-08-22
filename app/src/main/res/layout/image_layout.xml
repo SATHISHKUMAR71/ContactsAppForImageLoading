@@ -59,7 +59,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <LinearLayout
-                    android:layout_width="290dp"
+                    android:layout_width="280dp"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:layout_marginStart="50dp"
@@ -85,7 +85,7 @@
                             android:layout_marginStart="10dp"
                             android:ellipsize="end"
                             android:maxLines="1"
-                            android:text="+91232143912"
+                            android:text="@string/_91232143912"
                             android:textSize="22sp"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintStart_toEndOf="@+id/mobileType"
@@ -93,9 +93,10 @@
                 </LinearLayout>
 
                 <ImageButton
+                    android:contentDescription="@string/call_the_contact"
                     android:id="@+id/callButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_marginEnd="5dp"
                     android:background="@drawable/make_call_button_drawable"
                     android:padding="10dp"

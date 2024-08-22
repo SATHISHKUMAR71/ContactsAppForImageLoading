@@ -8,6 +8,8 @@
     <string name="add_picture">Add Picture</string>
     <string name="save">Save</string>
     <string name="label">Label</string>
+    <string name="call_the_contact">Call the Contact</string>
+    <string name="_91232143912">+91232143912</string>
     <string-array name="phoneNumberLabel">
         <item>Mobile</item>
         <item>Whatsapp</item>

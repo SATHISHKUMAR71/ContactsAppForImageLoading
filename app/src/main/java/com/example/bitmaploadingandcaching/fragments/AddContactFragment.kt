@@ -1,7 +1,9 @@
 package com.example.bitmaploadingandcaching.fragments
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -16,12 +18,14 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.setPadding
 import androidx.core.view.size
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.dataclass.Contact
 import com.example.bitmaploadingandcaching.dataclass.LabelData
+import com.example.bitmaploadingandcaching.storage.DiskCache
 import com.example.bitmaploadingandcaching.viewmodel.CacheData
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
@@ -34,6 +38,8 @@ import kotlin.random.Random
 
 class AddContactFragment : Fragment() {
 
+    private lateinit var launchImage: ActivityResultLauncher<Intent>
+    private lateinit var launchCamera: ActivityResultLauncher<Intent>
     private lateinit var addPictureImg:ImageView
     private var phoneLabelArray = arrayOf("")
     private var phoneLabelLength = 0
@@ -57,6 +63,9 @@ class AddContactFragment : Fragment() {
     private var oneTimeGenerateEmail = 0
     private var oneTimeGenerateDate = 0
     private var dataImage:Uri = Uri.parse("")
+    private var bitmapData = ""
+    private var isUri = false
+    private var isBitmap = false
     private var phoneMapIndex = -1
     private var emailMapIndex = -1
     private var dateMapIndex = -1
@@ -126,20 +135,39 @@ class AddContactFragment : Fragment() {
                     var j =0
                     for(i in phoneListWithLabel){
                         if(i.value.value.isNotEmpty() && i.value.label.isNotEmpty()){
-                            val contact = Contact(name,
-                                dataImage.toString(),
-                                HomeFragment.COLORS_LIST[Random.nextInt(0,10)],i.value.value,i.value.label,
-                                isHighlighted = false,isUri = true,dateListWithLabel)
-                            CacheData.addList(contact,left)
+                            if(isUri){
+                                val contact = Contact(name,
+                                    dataImage.toString(),
+                                    HomeFragment.COLORS_LIST[Random.nextInt(0,10)],i.value.value,i.value.label,
+                                    isHighlighted = false,isUri = isUri,isBitmap,dateListWithLabel)
+                                CacheData.addList(contact,left)
+                            }
+                            else{
+                                val contact = Contact(name,
+                                    bitmapData,
+                                    HomeFragment.COLORS_LIST[Random.nextInt(0,10)],i.value.value,i.value.label,
+                                    isHighlighted = false,isUri = isUri,isBitmap,dateListWithLabel)
+                                CacheData.addList(contact,left)
+                            }
                             j++
                         }
                     }
                     if(j==0){
-                        val contact = Contact(name,
-                            dataImage.toString(),
-                            HomeFragment.COLORS_LIST[Random.nextInt(0,10)],"","Mobile",
-                            isHighlighted = false,isUri = true,dateListWithLabel)
-                        CacheData.addList(contact,left)
+                        if(isUri){
+                            val contact = Contact(name,
+                                dataImage.toString(),
+                                HomeFragment.COLORS_LIST[Random.nextInt(0,10)],"","Mobile",
+                                isHighlighted = false,isUri = isUri,isBitmap,dateListWithLabel)
+                            CacheData.addList(contact,left)
+                        }
+                        else{
+                            val contact = Contact(name,
+                                bitmapData,
+                                HomeFragment.COLORS_LIST[Random.nextInt(0,10)],"","Mobile",
+                                isHighlighted = false,isUri = isUri,isBitmap,dateListWithLabel)
+                            CacheData.addList(contact,left)
+                        }
+
                     }
                     println("MAP DATA: $dateListWithLabel $emailListWithLabel $phoneListWithLabel")
                     parentFragmentManager.popBackStack()
@@ -154,24 +182,62 @@ class AddContactFragment : Fragment() {
             }
         }
 
-        var launchImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
+        launchImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
             if(result.resultCode == Activity.RESULT_OK){
-                var image = result.data?.data
+                val image = result.data?.data
+                isBitmap = false
+                isUri = true
+                println("ON DATA $image")
                 dataImage = image?:Uri.parse("")
+                println("ON DATA ${dataImage}")
                 addPictureImg.setPadding(0)
                 addPictureImg.setImageURI(image)
             }
         }
 
-        addPictureText.setOnClickListener{
-            val i = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            launchImage.launch(i)
+        launchCamera = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
+            if(result.resultCode == Activity.RESULT_OK){
+                val image1 = result.data?.data
+                val image = result.data?.extras?.get("data") as Bitmap
+                bitmapData = image.toString()
+                isBitmap = true
+                isUri = false
+                DiskCache.saveBitMap(requireContext(),bitmapData,image)
+                println("IMAGE DATA: $image")
+//                dataImage = image?:Uri.parse("")
+                println("IMAGE DATA: data uri $dataImage")
+                addPictureImg.setPadding(0)
+//                addPictureImg.setImageURI(image)
+                addPictureImg.setImageBitmap(image)
+            }
         }
+
+        addPictureText.setOnClickListener {
+            showAlertDialog()
+        }
+
         addPictureImg.setOnClickListener{
-            val i = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            launchImage.launch(i)
+            showAlertDialog()
         }
         return view
+    }
+
+    private fun showAlertDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Choose Image Source")
+            .setItems(arrayOf("Camera","Gallery")){_,which ->
+                when(which){
+                    0 -> {
+                        val i = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                        launchCamera.launch(i)
+                    }
+                    1 -> {
+                        val i = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                        launchImage.launch(i)
+                    }
+                }
+            }
+            .show()
     }
 
     private fun addPhoneLayout() {
