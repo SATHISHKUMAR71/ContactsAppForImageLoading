@@ -117,8 +117,8 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
         searchQuery = HomeFragment.queryReceived
         updateSearchedView(holder)
         if(contactList[holder.absoluteAdapterPosition].isBitmap){
-            println("ON ELSE IF ${contactList[position].image}")
-            val bitmap = DiskCache.loadBitMap(context,contactList[position].image)
+            val bitmap = CacheData.bitmapCache[contactList[position].image]
+//            val bitmap = DiskCache.loadBitMap(context,contactList[position].image)
             holder.imageView.setImageBitmap(bitmap)
             println(bitmap)
             holder.imageView.visibility = View.VISIBLE
@@ -130,7 +130,6 @@ class ImagesAdapter(private var context: Context):RecyclerView.Adapter<ImagesAda
             holder.imageView.visibility = View.INVISIBLE
             val i = context.contentResolver.query(Uri.parse(contactList[position].image),null,null,null,null)
             if(i?.moveToNext()==true){
-                println("ON IF")
                 if(holder.absoluteAdapterPosition == position){
                     holder.imageView.setImageURI(Uri.parse(contactList[position].image))
                     holder.imageView.visibility = View.VISIBLE

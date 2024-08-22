@@ -96,12 +96,11 @@ class AddContactFragment : Fragment() {
         addEmailLayout()
         addPhoneLayout()
         addDateLayout()
-        val datePicker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText("Select the Birthday Date")
-            .setTextInputFormat(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()))
-            .setInputMode(MaterialDatePicker.INPUT_MODE_TEXT)
-            .build()
-
+//        val datePicker = MaterialDatePicker.Builder.datePicker()
+//            .setTitleText("Select the Birthday Date")
+//            .setTextInputFormat(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()))
+//            .setInputMode(MaterialDatePicker.INPUT_MODE_TEXT)
+//            .build()
         addNoteToolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
@@ -197,17 +196,13 @@ class AddContactFragment : Fragment() {
 
         launchCamera = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
             if(result.resultCode == Activity.RESULT_OK){
-                val image1 = result.data?.data
                 val image = result.data?.extras?.get("data") as Bitmap
                 bitmapData = image.toString()
                 isBitmap = true
                 isUri = false
-                DiskCache.saveBitMap(requireContext(),bitmapData,image)
-                println("IMAGE DATA: $image")
-//                dataImage = image?:Uri.parse("")
-                println("IMAGE DATA: data uri $dataImage")
+//                DiskCache.saveBitMap(requireContext(),bitmapData,image)
+                CacheData.bitmapCache.put(bitmapData,image)
                 addPictureImg.setPadding(0)
-//                addPictureImg.setImageURI(image)
                 addPictureImg.setImageBitmap(image)
             }
         }
