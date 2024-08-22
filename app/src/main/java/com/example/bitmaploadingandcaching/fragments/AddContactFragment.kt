@@ -25,7 +25,6 @@ import androidx.core.view.size
 import com.example.bitmaploadingandcaching.R
 import com.example.bitmaploadingandcaching.dataclass.Contact
 import com.example.bitmaploadingandcaching.dataclass.LabelData
-import com.example.bitmaploadingandcaching.storage.DiskCache
 import com.example.bitmaploadingandcaching.viewmodel.CacheData
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
@@ -45,6 +44,8 @@ class AddContactFragment : Fragment() {
     private var phoneLabelLength = 0
     private var emailLabelArray = arrayOf("")
     private var emailLabelLength = 0
+    private var left = 0
+    private var right = CacheData.list.size
     private var dateLabelArray = arrayOf("")
     private var dateLabelLength = 0
     private var phoneListWithLabel:MutableMap<Int,LabelData> = mutableMapOf()
@@ -69,58 +70,83 @@ class AddContactFragment : Fragment() {
     private var phoneMapIndex = -1
     private var emailMapIndex = -1
     private var dateMapIndex = -1
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        phoneLabelArray =resources.getStringArray(R.array.phoneNumberLabel)
-        phoneLabelLength = phoneLabelArray.size
-        emailLabelArray = resources.getStringArray(R.array.emailLabel)
-        emailLabelLength = emailLabelArray.size
-        dateLabelArray = resources.getStringArray(R.array.dateLabel)
-        dateLabelLength = dateLabelArray.size
+        initResourceData()
         val view =  inflater.inflate(R.layout.fragment_add_note, container, false)
-        addPictureText = view.findViewById(R.id.addPictureButton)
-        addPictureImg = view.findViewById(R.id.addPictureImage)
-        firstName = view.findViewById(R.id.firstName)
-        lastName = view.findViewById(R.id.lastName)
-        companyName = view.findViewById(R.id.companyName)
-
-        saveBtn = view.findViewById(R.id.addContactSaveButton)
-        addNoteToolbar = view.findViewById(R.id.addNoteToolbar)
-
-        phoneContainer = view.findViewById(R.id.linearLayoutPhoneContainer)
-        emailContainer = view.findViewById(R.id.linearLayoutEmailContainer)
-        dateContainer = view.findViewById(R.id.linearLayoutDateContainer)
+        initializeViews(view)
         addEmailLayout()
         addPhoneLayout()
         addDateLayout()
-//        val datePicker = MaterialDatePicker.Builder.datePicker()
-//            .setTitleText("Select the Birthday Date")
-//            .setTextInputFormat(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()))
-//            .setInputMode(MaterialDatePicker.INPUT_MODE_TEXT)
-//            .build()
+        setUpListeners(addNoteToolbar,saveBtn,addPictureText,addPictureImg)
+        setActivityResultLaunchers()
+        return view
+    }
+
+    private fun setActivityResultLaunchers() {
+        launchImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
+            if(result.resultCode == Activity.RESULT_OK){
+                val image = result.data?.data
+                isBitmap = false
+                isUri = true
+                println("ON DATA $image")
+                dataImage = image?:Uri.parse("")
+                println("ON DATA ${dataImage}")
+                addPictureImg.setPadding(0)
+                addPictureImg.setImageURI(image)
+            }
+        }
+
+        launchCamera = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
+            if(result.resultCode == Activity.RESULT_OK){
+                val image = result.data?.extras?.get("data") as Bitmap
+                bitmapData = image.toString()
+                isBitmap = true
+                isUri = false
+//                DiskCache.saveBitMap(requireContext(),bitmapData,image)
+                CacheData.bitmapCache.put(bitmapData,image)
+                addPictureImg.setPadding(0)
+                addPictureImg.setImageBitmap(image)
+            }
+        }
+
+    }
+
+    private fun setUpListeners(
+        addNoteToolbar: MaterialToolbar,
+        saveBtn: MaterialButton,
+        addPictureText: MaterialButton,
+        addPictureImg: ImageView
+    ) {
+        addPictureText.setOnClickListener {
+            showAlertDialog()
+        }
+        addPictureImg.setOnClickListener{
+            showAlertDialog()
+        }
         addNoteToolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
         }
-        var left = 0
-        var right = CacheData.list.size
         saveBtn.setOnClickListener {
             if(firstName.text.toString().isNotEmpty() || lastName.text.toString().isNotEmpty() ||
                 companyName.text.toString().isNotEmpty()){
                 var name = firstName.text.toString()
-                if(firstName.text.toString().isEmpty()){
-                    name += lastName.text.toString()
+                name += if(firstName.text.toString().isEmpty()){
+                    lastName.text.toString()
+                } else{
+                    " "+lastName.text.toString()
                 }
-                else{
-                    name += " "+lastName.text.toString()
-                }
+
                 if(name.isEmpty()){
                     if(companyName.text.toString().isNotEmpty()){
                         name = companyName.text.toString()
                     }
                 }
+
                 if(name.isNotEmpty()){
                     while (left<right){
                         val mid = (left+right) / 2
@@ -180,41 +206,15 @@ class AddContactFragment : Fragment() {
                 Toast.makeText(requireContext(),"Add Info To Save as a Contact",Toast.LENGTH_SHORT).show()
             }
         }
+    }
 
-        launchImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
-            if(result.resultCode == Activity.RESULT_OK){
-                val image = result.data?.data
-                isBitmap = false
-                isUri = true
-                println("ON DATA $image")
-                dataImage = image?:Uri.parse("")
-                println("ON DATA ${dataImage}")
-                addPictureImg.setPadding(0)
-                addPictureImg.setImageURI(image)
-            }
-        }
-
-        launchCamera = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
-            if(result.resultCode == Activity.RESULT_OK){
-                val image = result.data?.extras?.get("data") as Bitmap
-                bitmapData = image.toString()
-                isBitmap = true
-                isUri = false
-//                DiskCache.saveBitMap(requireContext(),bitmapData,image)
-                CacheData.bitmapCache.put(bitmapData,image)
-                addPictureImg.setPadding(0)
-                addPictureImg.setImageBitmap(image)
-            }
-        }
-
-        addPictureText.setOnClickListener {
-            showAlertDialog()
-        }
-
-        addPictureImg.setOnClickListener{
-            showAlertDialog()
-        }
-        return view
+    private fun initResourceData() {
+        phoneLabelArray =resources.getStringArray(R.array.phoneNumberLabel)
+        phoneLabelLength = phoneLabelArray.size
+        emailLabelArray = resources.getStringArray(R.array.emailLabel)
+        emailLabelLength = emailLabelArray.size
+        dateLabelArray = resources.getStringArray(R.array.dateLabel)
+        dateLabelLength = dateLabelArray.size
     }
 
     private fun showAlertDialog() {
@@ -235,6 +235,19 @@ class AddContactFragment : Fragment() {
             .show()
     }
 
+    private fun initializeViews(view: View){
+        addPictureText = view.findViewById(R.id.addPictureButton)
+        addPictureImg = view.findViewById(R.id.addPictureImage)
+        firstName = view.findViewById(R.id.firstName)
+        lastName = view.findViewById(R.id.lastName)
+        companyName = view.findViewById(R.id.companyName)
+        saveBtn = view.findViewById(R.id.addContactSaveButton)
+        addNoteToolbar = view.findViewById(R.id.addNoteToolbar)
+        phoneContainer = view.findViewById(R.id.linearLayoutPhoneContainer)
+        emailContainer = view.findViewById(R.id.linearLayoutEmailContainer)
+        dateContainer = view.findViewById(R.id.linearLayoutDateContainer)
+    }
+
     private fun addPhoneLayout() {
         val index = phoneMapIndex+1
         phoneListWithLabel[index] =  LabelData("","")
@@ -250,11 +263,6 @@ class AddContactFragment : Fragment() {
         layoutPhoneNumber.id = View.generateViewId()
         layoutClearPhone.id = View.generateViewId()
         layoutPhoneLabel.id = View.generateViewId()
-        layoutPhoneNumber.setOnFocusChangeListener { v, hasFocus ->
-            if(!hasFocus){
-
-            }
-        }
         layoutPhoneNumber.addTextChangedListener(object : TextWatcher{
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
 
@@ -287,8 +295,8 @@ class AddContactFragment : Fragment() {
             layoutPhoneLabel.setText(tmpLabel,false)
             phoneListWithLabel[index]?.label = tmpLabel
         }
-        layoutPhoneLabel.setOnItemClickListener { parent, view, position, id ->
-            var option = parent.getItemAtPosition(position).toString()
+        layoutPhoneLabel.setOnItemClickListener { parent, _, position, _ ->
+            val option = parent.getItemAtPosition(position).toString()
             phoneListWithLabel[index]?.label = option
         }
         layoutClearPhone.setOnClickListener{
